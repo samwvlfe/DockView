@@ -1,25 +1,22 @@
 const fastify = require("fastify")({ logger: true });
 const cors = require("@fastify/cors");
+const { createClient } = require("@supabase/supabase-js");
 
-// CORS for now (we'll restrict later)
-fastify.register(cors, {
-  origin: "*"
-});
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+// CORS
+fastify.register(cors, { origin: "*" });
 
 // Test route
 fastify.get("/", async () => {
-  return { message: "Backend running!" };
+  return { message: "Backend is running on Render!" };
 });
 
-// Required for Render:
-const PORT = process.env.PORT || 3001;
-
-fastify.listen({ port: PORT, host: "0.0.0.0" }, (err) => {
-  if (err) throw err;
-  console.log("My own server running on port", PORT);
-});
-
-// ------------ READ ALL MESSAGES ------------
+// READ messages
 fastify.get("/messages", async () => {
   const { data, error } = await supabase
     .from("messages")
@@ -32,4 +29,11 @@ fastify.get("/messages", async () => {
   }
 
   return { messages: data };
+});
+
+// Render requirement
+const PORT = process.env.PORT || 3001;
+fastify.listen({ port: PORT, host: "0.0.0.0" }, (err) => {
+  if (err) throw err;
+  console.log("Server running on port", PORT);
 });
