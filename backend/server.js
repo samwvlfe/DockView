@@ -16,5 +16,5 @@ const PORT = process.env.PORT || 3001;
 
 fastify.listen({ port: PORT, host: "0.0.0.0" }, (err) => {
   if (err) throw err;
-  console.log("Server running on port", PORT);
+  console.log("My own server running on port", PORT);
 });
