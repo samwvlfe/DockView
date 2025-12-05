@@ -6,7 +6,7 @@ export default function Home() {
         <div className="sidemenu">
           <Image
             className="sm-logo"
-            src="/Users/samwvlfe/Desktop/2112 Code/DockView/frontend/public/dockstar-xmas-logo.png"
+            src="/dockstar-xmas-logo.png"
             alt="dockstar xmas logo"
             priority
           />

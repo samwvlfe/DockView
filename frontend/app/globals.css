@@ -26,7 +26,6 @@ main{
 .sidemenu{
   display: flex;
   flex-direction: column;
-  align-items: baseline;
   height: 100vh;
   }
   .sidemenu .sm-logo{
@@ -35,7 +34,8 @@ main{
   }
   .sm-option{
     font-size: 20px;
-    padding: 20px;
+    padding: 20px 0;
+    width: 100%;
   }
   .sm-option:hover{
     background-color: #1b1b1b;
