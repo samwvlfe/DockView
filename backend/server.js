@@ -11,11 +11,6 @@ const supabase = createClient(
 // CORS
 fastify.register(cors, { origin: "*" });
 
-fastify.addContentTypeParser('application/json', { parseAs: 'json' }, function (req, body, done) {
-  done(null, body);
-});
-
-
 // Test route
 fastify.get("/", async () => {
   return { message: "Backend is running on Render!" };
