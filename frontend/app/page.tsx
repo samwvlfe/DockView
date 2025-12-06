@@ -16,7 +16,17 @@ export default function Home() {
           <div className="sm-option">Settings</div>
         </div>
         <div className="content">
-          <div className="txt">Content</div>
+          <div className="bays-container">
+            <div className="baylist">
+              <div className="baylist.hdr">
+                <div>Dock ID</div>
+                <div>Dock Name</div>
+                <div>Status</div>
+                <div>Time of Status</div>
+              </div>
+            </div>
+          </div>
+          <div className="data-container"></div>
         </div>
       </main>
   );
