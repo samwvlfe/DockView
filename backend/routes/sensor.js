@@ -10,7 +10,7 @@ module.exports = async function (fastify, opts) {
             }
 
             // Look up sensor
-            const { data: sensor, error: sensorError } = await supabase
+            const { data: sensor, error: sensorError } = await fastify.supabase
                 .from("sensors")
                 .select("*")
                 .eq("id", sensor_id)
@@ -21,7 +21,7 @@ module.exports = async function (fastify, opts) {
             }
 
             // Look up dock bay to get CURRENT status
-            const { data: dockBay, error: dockBayError } = await supabase
+            const { data: dockBay, error: dockBayError } = await fastify.supabase
                 .from("dock_bays")
                 .select("*")
                 .eq("id", dock_bay_id)
@@ -36,7 +36,7 @@ module.exports = async function (fastify, opts) {
             let newStatus = oldStatus;
 
             // Create sensor event in DB
-            const { data: event, error: eventError } = await supabase
+            const { data: event, error: eventError } = await fastify.supabase
                 .from("sensor_events")
                 .insert({
                     sensor_id,
@@ -60,7 +60,7 @@ module.exports = async function (fastify, opts) {
                 actionType = "update_status";
 
                 // Update dock bay status
-                const { error: updateError } = await supabase
+                const { error: updateError } = await fastify.supabase
                     .from("dock_bays")
                     .update({ status: newStatus })
                     .eq("id", dock_bay_id);
@@ -79,7 +79,7 @@ module.exports = async function (fastify, opts) {
                 });
 
                 // Insert dock bay history row
-                const { error: historyError } = await supabase
+                const { error: historyError } = await fastify.supabase
                     .from("dock_bay_history")
                     .insert({
                     dock_bay_id,
@@ -96,7 +96,7 @@ module.exports = async function (fastify, opts) {
             }
 
             // Log action (always do this)
-            const { error: actionError } = await supabase
+            const { error: actionError } = await fastify.supabase
                 .from("actions")
                 .insert({
                     event_id: event.id,
