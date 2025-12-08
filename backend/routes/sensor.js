@@ -1,4 +1,8 @@
 // POST Sensor Data
+
+// Include broadcaster module
+const broadcaster = require("../lib/broadcaster");
+
 module.exports = async function (fastify, opts) {
     fastify.post("/sensor", async (request, reply) => {
         try {
@@ -71,7 +75,7 @@ module.exports = async function (fastify, opts) {
                 }
 
                 // Broadcast update via WebSocket
-                fastify.broadcast({
+                broadcaster.broadcast({
                     dock_bay_id,
                     old_status: oldStatus,
                     new_status: newStatus,

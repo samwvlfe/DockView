@@ -1,20 +1,14 @@
-//Websocket route to broadcast updates to clients
+// Use lib/broadcaster to manage WebSocket clients and broadcasting
+
 module.exports = async function (fastify, opts) {
-  const clients = new Set(); // store connected clients
+    const broadcaster = require("../lib/broadcaster");
 
-  // WebSocket endpoint
-  fastify.get("/ws", { websocket: true }, (connection, req) => {
-    clients.add(connection);
+    // WebSocket endpoint
+    fastify.get("/ws", { websocket: true }, (connection, req) => {
+        broadcaster.addClient(connection);
 
-    connection.socket.on("close", () => {
-      clients.delete(connection);
+        connection.socket.on("close", () => {
+            broadcaster.removeClient(connection);
+        });
     });
-  });
-
-  // Broadcast helper function
-  fastify.decorate("broadcast", (msg) => {
-    for (const client of clients) {
-      client.socket.send(JSON.stringify(msg));
-    }
-  });
 };
