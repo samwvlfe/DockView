@@ -16,6 +16,7 @@ fastify.register(require("./routes/sensor"));
 // WebSocket route
 fastify.register(require("@fastify/websocket"));
 fastify.register(require("./routes/ws"));
+fastify.register(require("./routes/sensor"));
 
 
 // Start server
