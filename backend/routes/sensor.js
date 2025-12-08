@@ -72,10 +72,10 @@ module.exports = async function (fastify, opts) {
 
                 // Broadcast update via WebSocket
                 fastify.broadcast({
-                dock_bay_id,
-                old_status: oldStatus,
-                new_status: newStatus,
-                event_type
+                    dock_bay_id,
+                    old_status: oldStatus,
+                    new_status: newStatus,
+                    event_type
                 });
 
                 // Insert dock bay history row
