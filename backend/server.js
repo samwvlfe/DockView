@@ -12,11 +12,10 @@ fastify.register(require("./plugins/supabase"));
 fastify.register(require("./routes/index"));
 fastify.register(require("./routes/messages"));
 fastify.register(require("./routes/docks"));
+fastify.register(require("./routes/ws"));
 fastify.register(require("./routes/sensor"));
 // WebSocket route
 fastify.register(require("@fastify/websocket"));
-fastify.register(require("./routes/ws"));
-fastify.register(require("./routes/sensor"));
 
 
 // Start server
