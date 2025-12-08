@@ -70,6 +70,14 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to update dock bay status" });
                 }
 
+                // Broadcast update via WebSocket
+                fastify.broadcast({
+                dock_bay_id,
+                old_status: oldStatus,
+                new_status: newStatus,
+                event_type
+                });
+
                 // Insert dock bay history row
                 const { error: historyError } = await supabase
                     .from("dock_bay_history")
