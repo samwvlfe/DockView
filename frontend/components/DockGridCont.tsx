@@ -1,14 +1,7 @@
 "use client";
 import styles from "./DockGridCont.module.css";
 import DockBayCard from "@/components/DockBayCard";
-
-interface DockBay {
-    id: number;
-    friendly_id: number;
-    name: string;
-    status: string;
-    status_changed_at: string;
-}
+import { DockBay } from "@/types/interfaces";
 
 interface DockBayGridProps {
     docks: DockBay[];

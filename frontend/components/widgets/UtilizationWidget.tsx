@@ -1,7 +1,7 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import util from "@/public/utilization-icon.png";
-import { DockBay } from "@/templates/types";
+import { DockBay } from "@/types/interfaces";
 
 interface UtilizationWidgetProps {
   docks: DockBay[];

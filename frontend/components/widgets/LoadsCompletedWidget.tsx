@@ -3,24 +3,27 @@ import { useEffect, useState } from "react";
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
+import { fetchLoadsCompleted } from "@/lib/api";
 
 export default function LoadsCompletedWidget() {
     const [count, setCount] = useState<number>(0);
 
     useEffect(() => {
-        async function fetchLoadsCompleted() {
-            try{
-                const res = await fetch("https://dockview.onrender.com/api/stats/loadsCompleted");
-                if(!res.ok){
-                    throw new Error("Failed to fetch loads completed");
-                }
-                const data = await res.json();
+        async function fetchLoadsCompletedData() {
+            try {
+                const data = await fetchLoadsCompleted();
                 setCount(data.length);
             } catch (error) {
                 console.error("Error fetching loads completed:", error);
             }
         }
-        const interval = setInterval(fetchLoadsCompleted, 15000); // update every 15 sec
+
+        // Initial fetch
+        fetchLoadsCompletedData();
+
+        // Set interval to fetch periodically
+        //change to connect to web socket later
+        const interval = setInterval(fetchLoadsCompletedData, 15000); 
         return () => clearInterval(interval);
 
     }, []);

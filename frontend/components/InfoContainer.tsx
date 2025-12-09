@@ -1,6 +1,6 @@
 import styles from "./InfoContainer.module.css";
 import { WidgetKey, WIDGET_BANK } from "./widgets/WidgetBank";
-import { DockBay } from "@/templates/types";
+import { DockBay } from "@/types/interfaces";
 
 interface InfoContainerProps {
   docks: DockBay[];

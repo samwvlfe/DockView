@@ -2,7 +2,7 @@ import UtilizationWidget from "./UtilizationWidget";
 import LoadsCompletedWidget from "./LoadsCompletedWidget";
 import AvgTurnoverWidget from "./AvgTurnoverWidget";
 import TrucksQueuedWidget from "./TrucksQueuedWidget";
-import { DockBay } from "@/templates/types";
+import { DockBay } from "@/types/interfaces";
 
 type WidgetBankType = {
   utilization: typeof UtilizationWidget;
