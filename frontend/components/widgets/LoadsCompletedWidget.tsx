@@ -1,13 +1,30 @@
+"use client";
+import { useEffect, useState } from "react";
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
-import { DockBay } from "@/templates/types";
 
-interface LoadsCompletedWidgetProps {
-  docks: DockBay[];
-}
+export default function LoadsCompletedWidget() {
+    const [count, setCount] = useState<number>(0);
 
-export default function LoadsCompletedWidget({ docks }: LoadsCompletedWidgetProps) {
+    useEffect(() => {
+        async function fetchLoadsCompleted() {
+            try{
+                const res = await fetch("https://dockview.onrender.com/api/stats/loadsCompleted");
+                if(!res.ok){
+                    throw new Error("Failed to fetch loads completed");
+                }
+                const data = await res.json();
+                setCount(data.length);
+            } catch (error) {
+                console.error("Error fetching loads completed:", error);
+            }
+        }
+        const interval = setInterval(fetchLoadsCompleted, 15000); // update every 15 sec
+        return () => clearInterval(interval);
+
+    }, []);
+
     return (
         <InfoWidget
             icon={
@@ -21,7 +38,7 @@ export default function LoadsCompletedWidget({ docks }: LoadsCompletedWidgetProp
             }
             iconColor="#14b8a6"
             title="LOADS COMPLETED"
-            value="225"
+            value={count}
         />
     );
 }

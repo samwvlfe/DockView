@@ -1,11 +1,7 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import avg from "@/public/avg-time-icon.png";
-import { DockBay } from "@/templates/types";
 
-interface AvgTurnoverWidgetProps {
-  docks: DockBay[];
-}
 
 export default function AvgTurnoverWidget() {
     return (

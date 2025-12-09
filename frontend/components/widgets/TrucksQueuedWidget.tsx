@@ -1,13 +1,8 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
-import { DockBay } from "@/templates/types";
 
-interface TrucksQueuedWidgetProps {
-  docks: DockBay[];
-}
-
-export default function TrucksQueuedWidget({ docks }: TrucksQueuedWidgetProps) {
+export default function TrucksQueuedWidget() {
     return (
         <InfoWidget
             icon={

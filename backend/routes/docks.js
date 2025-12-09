@@ -10,7 +10,7 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
-    // GET Dock Bay History
+    // GET Dock Bay loads completed today
     fastify.get("/api/stats/loadsCompleted", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bay_history")

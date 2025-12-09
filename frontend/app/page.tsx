@@ -25,16 +25,6 @@ export default function Home() {
     loadDocks();
   }, []);
 
-  // const testDocks = [
-  //   { id: 1, name: "Dock A", status: "occupied" },
-  //   { id: 2, name: "Dock B", status: "occupied" },
-  //   { id: 3, name: "Dock C", status: "idle" },
-  //   { id: 4, name: "Dock D", status: "idle" },
-  //   { id: 5, name: "Dock E", status: "occupied" },
-  //   { id: 6, name: "Dock F", status: "idle" },
-  // ];
-
-
   return (
       <main>
         <Header />
