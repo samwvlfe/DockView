@@ -1,13 +1,16 @@
 "use client";
 import styles from "./DockBayCard.module.css";
+import DockBay from "@/components/DockGridCont";
 
 interface DockBayCardProps {
+  id: number;
+  friendly_id: number;
   name: string;
   status: string;
-  // other props as needed (timer value)
+  created_at?: string;
 }
 
-export default function DockBayCard({ name, status }: DockBayCardProps) {
+export default function DockBayCard({ id, friendly_id, name, status, created_at }: DockBayCardProps) {
   return (
     <div className={`${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`}>
         <div className="apart">

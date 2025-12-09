@@ -4,15 +4,17 @@ import DockBayCard from "@/components/DockBayCard";
 
 interface DockBay {
   id: number;
+  friendly_id: number;
   name: string;
   status: string;
+  created_at?: string;
 }
 
 interface DockBayGridProps {
   docks: DockBay[];
 }
 
-export default function DockBayGrid({ docks }: DockBayGridProps) {
+export default function DockGridCont({ docks }: DockBayGridProps) {
     // Make a shallow copy and sort so 'occupied' items come first.
     const sortedDocks = [...docks].sort((a, b) => {
         const aOcc = (a.status ?? "").toLowerCase().trim() === "occupied";
@@ -38,9 +40,11 @@ export default function DockBayGrid({ docks }: DockBayGridProps) {
                 <div className={styles.baylist}>
                     {sortedDocks.map((dock) => (
                         <DockBayCard
-                            key={dock.id}
+                            id={dock.id}
+                            friendly_id={dock.friendly_id}
                             name={dock.name}
                             status={dock.status}
+                            created_at={dock.created_at}
                         />
                     ))}
                 </div>

@@ -4,7 +4,7 @@ module.exports = async function (fastify, opts) {
     fastify.get("/api/docks", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bays")
-            .select("*");
+            .select("id, friendly_id, name, status, created_at");
 
         if (error) return { error: "Failed to fetch docks" };
         return data;
