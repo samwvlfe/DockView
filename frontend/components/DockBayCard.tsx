@@ -1,16 +1,18 @@
 "use client";
+import { useState } from "react";
 import styles from "./DockBayCard.module.css";
-import DockBay from "@/components/DockGridCont";
 
 interface DockBayCardProps {
   id: number;
   friendly_id: number;
   name: string;
   status: string;
-  created_at?: string;
+  status_changed_at: string;
 }
 
-export default function DockBayCard({ id, friendly_id, name, status, created_at }: DockBayCardProps) {
+export default function DockBayCard({ id, friendly_id, name, status, status_changed_at }: DockBayCardProps) {
+  // Keep track of time since status change
+  const [elapsed, setElapsed] = useState("00:00:00");
   return (
     <div className={`${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`}>
         <div className="apart">

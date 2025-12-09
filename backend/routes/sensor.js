@@ -59,14 +59,17 @@ module.exports = async function (fastify, opts) {
             // Decide what event means
             let actionType = null;
 
-            if (event_type === "leveler_state") {  //add more event_types for different sensor actions
+            if (event_type === "manual change - POST") {  //add more event_types for different sensor actions
                 newStatus = payload.open ? "occupied" : "idle";
                 actionType = "update_status";
 
                 // Update dock bay status
                 const { error: updateError } = await fastify.supabase
                     .from("dock_bays")
-                    .update({ status: newStatus })
+                    .update({ 
+                        status: newStatus,
+                        status_changed_at: new Date().toISOString()
+                     })
                     .eq("id", dock_bay_id);
 
                 if (updateError) {

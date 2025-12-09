@@ -3,15 +3,15 @@ import styles from "./DockGridCont.module.css";
 import DockBayCard from "@/components/DockBayCard";
 
 interface DockBay {
-  id: number;
-  friendly_id: number;
-  name: string;
-  status: string;
-  created_at?: string;
+    id: number;
+    friendly_id: number;
+    name: string;
+    status: string;
+    status_changed_at: string;
 }
 
 interface DockBayGridProps {
-  docks: DockBay[];
+    docks: DockBay[];
 }
 
 export default function DockGridCont({ docks }: DockBayGridProps) {
@@ -44,7 +44,7 @@ export default function DockGridCont({ docks }: DockBayGridProps) {
                             friendly_id={dock.friendly_id}
                             name={dock.name}
                             status={dock.status}
-                            created_at={dock.created_at}
+                            status_changed_at={dock.status_changed_at}
                         />
                     ))}
                 </div>
