@@ -78,11 +78,14 @@ module.exports = async function (fastify, opts) {
 
                 // Broadcast update via WebSocket
                 broadcaster.broadcast({
-                    dock_bay_id,
-                    old_status: oldStatus,
-                    new_status: newStatus,
-                    event_type,
-                    status_changed_at: new Date().toISOString()
+                    type: "dock_status_update",
+                    payload: {
+                        dock_bay_id,
+                        old_status: oldStatus,
+                        new_status: newStatus,
+                        event_type,
+                        status_changed_at: new Date().toISOString()
+                    }
                 });
 
                 // If load completed, broadcast load completed event
