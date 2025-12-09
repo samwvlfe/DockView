@@ -40,6 +40,7 @@ export default function DockGridCont({ docks }: DockBayGridProps) {
                 <div className={styles.baylist}>
                     {sortedDocks.map((dock) => (
                         <DockBayCard
+                            key={dock.id}
                             id={dock.id}
                             friendly_id={dock.friendly_id}
                             name={dock.name}
