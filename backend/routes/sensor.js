@@ -1,6 +1,5 @@
 // POST Sensor Data
 
-// Include broadcaster module
 const broadcaster = require("../lib/broadcaster");
 
 module.exports = async function (fastify, opts) {
@@ -82,7 +81,8 @@ module.exports = async function (fastify, opts) {
                     dock_bay_id,
                     old_status: oldStatus,
                     new_status: newStatus,
-                    event_type
+                    event_type,
+                    status_changed_at: new Date().toISOString()
                 });
 
                 // Insert dock bay history row
