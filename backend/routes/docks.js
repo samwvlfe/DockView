@@ -11,13 +11,18 @@ module.exports = async function (fastify, opts) {
     });
 
     // GET Dock Bay History
-    fastify.get("/api/docks/history", async (request) => {
+    fastify.get("/api/stats/loadsCompleted", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bay_history")
-            .select("dock_bay_id, old_status, new_status, changed_at");
+            .select("*")
+            .eq("old_status", "occupied")
+            .eq("new_status", "idle")
+            //only get completed loads TODAY
+            .gte("created_at", new Date(new Date().setHours(0,0,0,0)).toISOString());
+
 
         if (error) return { error: "Failed to fetch dock history" };
         return data;
     });
-    
+
 }
