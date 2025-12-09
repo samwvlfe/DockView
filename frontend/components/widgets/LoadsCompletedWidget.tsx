@@ -1,8 +1,13 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
+import { DockBay } from "@/templates/types";
 
-export default function LoadsCompletedWidget() {
+interface LoadsCompletedWidgetProps {
+  docks: DockBay[];
+}
+
+export default function LoadsCompletedWidget({ docks }: LoadsCompletedWidgetProps) {
     return (
         <InfoWidget
             icon={

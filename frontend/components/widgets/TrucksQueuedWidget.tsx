@@ -1,8 +1,13 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
+import { DockBay } from "@/templates/types";
 
-export default function LoadsCompletedWidget() {
+interface TrucksQueuedWidgetProps {
+  docks: DockBay[];
+}
+
+export default function TrucksQueuedWidget({ docks }: TrucksQueuedWidgetProps) {
     return (
         <InfoWidget
             icon={
@@ -15,7 +20,7 @@ export default function LoadsCompletedWidget() {
                 />
             }
             iconColor="#ef4444"
-            title="LOADS COMPLETED"
+            title="TRUCKS QUEUED"
             value="225"
         />
     );

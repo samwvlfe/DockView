@@ -40,7 +40,7 @@ export default function Home() {
         <Header />
         <div className="content">  
           <DockGridCont docks={docks}/>
-          <InfoContainer selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]} />
+          <InfoContainer docks={docks} selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]} />
           </div>
       </main>
   );

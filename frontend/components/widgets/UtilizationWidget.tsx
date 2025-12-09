@@ -1,8 +1,17 @@
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import util from "@/public/utilization-icon.png";
+import { DockBay } from "@/templates/types";
 
-export default function UtilizationWidget() {
+interface UtilizationWidgetProps {
+  docks: DockBay[];
+}
+
+export default function UtilizationWidget({ docks }: UtilizationWidgetProps) {
+    // calculate utilization
+    const total = docks.length;
+    const occupied = docks.filter(d => d.status === "occupied").length;
+    const utilization = total === 0 ? 0 : Math.round((occupied / total) * 100);
     return (
         <InfoWidget
             icon={
@@ -16,7 +25,7 @@ export default function UtilizationWidget() {
             }
             iconColor="#3b82f6"
             title="UTILIZATION"
-            value="225%"
+            value={`${utilization}%`}
         />
     );
 }
