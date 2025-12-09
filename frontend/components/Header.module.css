@@ -1,0 +1,23 @@
+.menu{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #3d4451;
+  }
+  .logo{
+    width: 230px;
+    height: auto;
+  }
+  .option-wrapper{
+    display: flex;
+    gap: 50px;
+    margin-right: 50px;
+  }
+  .option{
+    font-size: 20px;
+    width: 100%;
+  }
+  .option:hover{
+    color: #3b82f6;
+    cursor: pointer;
+  }

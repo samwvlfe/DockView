@@ -1,0 +1,15 @@
+.info-widget-hdr{
+    display: flex;
+    gap: 10px;
+}
+.info-widget-icon{
+    display: flex;
+    padding: 5px;
+    border-radius: var(--radius);
+    align-items: center;
+    justify-content: center;
+}
+.info-widget-icon img{
+    height: 49px;
+    width: auto;
+}

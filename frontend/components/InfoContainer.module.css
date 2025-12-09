@@ -1,0 +1,6 @@
+.widgets-grid{
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: var(--padd);
+}

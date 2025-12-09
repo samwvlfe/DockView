@@ -1,0 +1,8 @@
+.bays-container{
+  display: flex;
+}
+.baylist{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--padd); 
+}
