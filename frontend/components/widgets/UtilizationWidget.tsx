@@ -24,7 +24,7 @@ export default function UtilizationWidget({ docks }: UtilizationWidgetProps) {
                 />
             }
             iconColor="#3b82f6"
-            title="UTILIZATION"
+            title="BAY UTILIZATION"
             value={`${utilization}%`}
         />
     );

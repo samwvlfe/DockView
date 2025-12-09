@@ -85,6 +85,18 @@ module.exports = async function (fastify, opts) {
                     status_changed_at: new Date().toISOString()
                 });
 
+                // If load completed, broadcast load completed event
+                if (oldStatus === "occupied" && newStatus === "idle") {
+                    broadcaster.broadcast({
+                        type: "load_completed",
+                        payload: {
+                            dock_bay_id,
+                            completed_at: new Date().toISOString()
+                        }
+                    });
+                }
+
+
                 // Insert dock bay history row
                 const { error: historyError } = await fastify.supabase
                     .from("dock_bay_history")
