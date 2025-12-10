@@ -23,7 +23,7 @@ export default function LoadsCompletedWidget() {
 
         // Set interval to fetch periodically
         //change to connect to web socket later
-        const interval = setInterval(fetchLoadsCompletedData, 15000); 
+        const interval = setInterval(fetchLoadsCompletedData, 1000); 
         return () => clearInterval(interval);
 
     }, []);
