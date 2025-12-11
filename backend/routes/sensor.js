@@ -88,7 +88,23 @@ module.exports = async function (fastify, opts) {
                     }
                 });
 
-                // If load completed
+                // DOCK BAY UPDATED TO OCCUPIED
+                if (oldStatus === "idle" && newStatus === "occupied") {
+                    // Update last_occupied_at timestamp
+                    const { error: timeError } = await fastify.supabase
+                        .from("dock_bays")
+                        .update({ 
+                            last_occupied_at: new Date().toISOString()
+                        })
+                        .eq("id", dock_bay_id);
+
+                    if (timeError) {
+                        console.error(timeError);
+                        return reply.code(500).send({ error: "Failed to update last occupied time" });
+                    }
+                }
+
+                // DOCK BAY UPDATED TO OPEN
                 if (oldStatus === "occupied" && newStatus === "idle") {
                     //boradcast load completed to WIDGET
                     broadcaster.broadcast({
@@ -98,8 +114,8 @@ module.exports = async function (fastify, opts) {
                             completed_at: new Date().toISOString()
                         }
                     });
-                    //insert into dock_turnovers table
 
+                    //insert into dock_turnovers table
                     startedLoad = new Date(dockBay.last_occupied_at);
                     completed_at = new Date().toISOString();
                     durationSecs = (new Date(completed_at).getTime() - startedLoad.getTime()) / 1000;
