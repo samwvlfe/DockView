@@ -18,6 +18,7 @@ module.exports = async function (fastify, opts) {
                 .select("*")
                 .eq("id", sensor_id) //WHERE clause
                 .single();
+            console.log("Sensor:", sensor);
             if (sensorError || !sensor) {
                 return reply.code(404).send({ error: "Sensor not found" });
             }
@@ -28,6 +29,11 @@ module.exports = async function (fastify, opts) {
                 .select("*")
                 .eq("id", dock_bay_id) //WHERE clause
                 .single();
+
+            console.log("Sensor:", sensor);
+            console.log("DockBay error:", dockBayError);
+            console.log("DockBay:", dockBay);
+
             if (dockBayError || !dockBay) {
                 console.error("Dock bay error:", dockBayError);
                 return reply.code(404).send({ error: "Dock bay not found" });
