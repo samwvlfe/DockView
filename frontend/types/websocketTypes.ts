@@ -21,8 +21,20 @@ export interface LoadCompletedMessage {
     payload: LoadCompletedPayload;
 }
 
+// DOCK TURNOVER MESSAGE
+export interface DockTurnoverPayload {
+    dock_bay_id: string;
+    turnover: number;
+}
+export interface DockTurnoverMessage {
+    type: "dock_turnover";
+    payload: DockTurnoverPayload;
+}
+
 //ADD MORE MESSAGE TYPES AS NEEDED
 
 // UNION OF ALL POSSIBLE MESSAGES
 export type WebSocketMessage =
-  | DockStatusUpdateMessage;
+  | { type: "dock_status_update"; payload: DockStatusUpdatePayload }
+  | { type: "load_completed"; payload: LoadCompletedPayload }
+  | { type: "dock_turnover"; payload: DockTurnoverPayload };
