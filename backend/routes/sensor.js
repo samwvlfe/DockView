@@ -77,8 +77,32 @@ module.exports = async function (fastify, opts) {
                         console.error(updateError);
                         return reply.code(500).send({ error: "Failed to update dock bay status" });
                     }
+                    //insert into dock_turnovers table
+                    const { error: updateError2 } = await fastify.supabase
+                        .from("dock_turnovers")
+                        .update({ 
+                            dock_uuid: dock_bay_id,
+                            status_changed_at: new Date().toISOString(),
+                            last_occupied_at: dockBay.last_occupied_at,
+                            duration: (new Date().getTime() - dockBay.status_changed_at.getTime()) / 1000 //duration in seconds
+                        })
+                        .eq("id", dock_bay_id);
+
+                    if (updateError2) {
+                        console.error(updateError2);
+                        return reply.code(500).send({ error: "Failed to update dock bay status" });
+                    }
+                    // Broadcast turnover
+                    broadcaster.broadcast({
+                        type: "dock_turnover",
+                        payload: {
+                            dock_bay_id,
+                            turnover_at: (new Date().getTime() - dockBay.status_changed_at.getTime()) / 1000
+                        }
+                    });
                 }
                 else{
+                    //just update to idle status
                     const { error: updateError } = await fastify.supabase
                         .from("dock_bays")
                         .update({ 
