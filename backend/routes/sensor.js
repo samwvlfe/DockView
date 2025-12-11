@@ -62,59 +62,18 @@ module.exports = async function (fastify, opts) {
                 newStatus = payload.open ? "occupied" : "idle";
                 actionType = "update_status";
 
-                // Update dock bay status. Update last_occupied_at timestamp if becoming occupied
-                if(newStatus === "occupied"){
-                    const { error: updateError } = await fastify.supabase
-                        .from("dock_bays")
-                        .update({ 
-                            status: newStatus,
-                            status_changed_at: new Date().toISOString(),
-                            last_occupied_at: new Date().toISOString()
-                        })
-                        .eq("id", dock_bay_id);
+                // Update dock bay status
+                const { error: updateError } = await fastify.supabase
+                    .from("dock_bays")
+                    .update({ 
+                        status: newStatus,
+                        status_changed_at: new Date().toISOString()
+                    })
+                    .eq("id", dock_bay_id);
 
-                    if (updateError) {
-                        console.error(updateError);
-                        return reply.code(500).send({ error: "Failed to update dock bay status" });
-                    }
-                    //insert into dock_turnovers table
-                    const { error: updateError2 } = await fastify.supabase
-                        .from("dock_turnovers")
-                        .update({ 
-                            dock_uuid: dock_bay_id,
-                            status_changed_at: new Date().toISOString(),
-                            last_occupied_at: dockBay.last_occupied_at,
-                            duration: (new Date().getTime() - dockBay.status_changed_at.getTime()) / 1000 //duration in seconds
-                        })
-                        .eq("id", dock_bay_id);
-
-                    if (updateError2) {
-                        console.error(updateError2);
-                        return reply.code(500).send({ error: "Failed to update dock bay status" });
-                    }
-                    // Broadcast turnover
-                    broadcaster.broadcast({
-                        type: "dock_turnover",
-                        payload: {
-                            dock_bay_id,
-                            turnover_at: (new Date().getTime() - dockBay.status_changed_at.getTime()) / 1000
-                        }
-                    });
-                }
-                else{
-                    //just update to idle status
-                    const { error: updateError } = await fastify.supabase
-                        .from("dock_bays")
-                        .update({ 
-                            status: newStatus,
-                            status_changed_at: new Date().toISOString()
-                        })
-                        .eq("id", dock_bay_id);
-
-                    if (updateError) {
-                        console.error(updateError);
-                        return reply.code(500).send({ error: "Failed to update dock bay status" });
-                    }
+                if (updateError) {
+                    console.error(updateError);
+                    return reply.code(500).send({ error: "Failed to update dock bay status" });
                 }
 
                 // Broadcast update via WebSocket
@@ -129,13 +88,41 @@ module.exports = async function (fastify, opts) {
                     }
                 });
 
-                // If load completed, broadcast load completed event
+                // If load completed
                 if (oldStatus === "occupied" && newStatus === "idle") {
+                    //boradcast load completed to WIDGET
                     broadcaster.broadcast({
                         type: "load_completed",
                         payload: {
                             dock_bay_id,
                             completed_at: new Date().toISOString()
+                        }
+                    });
+                    //insert into dock_turnovers table
+
+                    startedLoad = new Date(dockBay.last_occupied_at);
+                    completed_at = new Date().toISOString();
+                    durationSecs = (new Date(completed_at).getTime() - startedLoad.getTime()) / 1000;
+
+                    const { error: updateError } = await fastify.supabase
+                        .from("dock_turnovers")
+                        .insert({ 
+                            dock_uuid: dock_bay_id,
+                            status_changed_at: new Date().toISOString(),
+                            last_occupied_at: dockBay.last_occupied_at,
+                            duration: durationSecs
+                        })
+
+                    if (updateError) {
+                        console.error(updateError);
+                        return reply.code(500).send({ error: "Failed to update dock bay status" });
+                    }
+                    // Broadcast turnover
+                    broadcaster.broadcast({
+                        type: "dock_turnover",
+                        payload: {
+                            dock_bay_id,
+                            duration: durationSecs
                         }
                     });
                 }

@@ -37,7 +37,7 @@ export default function AvgTurnoverWidget() {
             }
             iconColor="#f59e0b"
             title="AVERAGE TURNOVER"
-            value="225 mins"
+            value={avgTurnover + " secs"}
         />
     );
 }
