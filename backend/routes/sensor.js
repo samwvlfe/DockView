@@ -32,7 +32,7 @@ module.exports = async function (fastify, opts) {
                 return reply.code(404).send({ error: "Dock bay not found" });
             }
 
-            console.log(dockBay);
+            console.log(`dock bay data returned: ${dockBay}`);
 
             // Store old status for comparison
             const oldStatus = dockBay.status;
