@@ -29,10 +29,12 @@ module.exports = async function (fastify, opts) {
                 .eq("id", dock_bay_id) //WHERE clause
                 .single();
             if (dockBayError || !dockBay) {
+                console.error("Dock bay error:", dockBayError);
                 return reply.code(404).send({ error: "Dock bay not found" });
             }
 
-            console.log('dock bay data returned:', JSON.stringify(dockBay, null, 2));
+            console.log('dock bay columns available:', Object.keys(dockBay));
+
 
             // Store old status for comparison
             const oldStatus = dockBay.status;

@@ -19,7 +19,7 @@ export default function AvgTurnoverWidget() {
             if(msg.type === "dock_turnover"){
                 const payload = msg.payload;
                 console.log(payload);
-                setAvgTurnover(payload.turnover)
+                setAvgTurnover(payload.duration)
             }
         };
 
