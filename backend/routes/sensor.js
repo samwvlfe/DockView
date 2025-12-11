@@ -108,14 +108,14 @@ module.exports = async function (fastify, opts) {
                         .from("dock_turnovers")
                         .insert({ 
                             dock_uuid: dock_bay_id,
-                            status_changed_at: new Date().toISOString(),
-                            last_occupied_at: dockBay.last_occupied_at,
+                            started_at: dockBay.last_occupied_at,
+                            completed_at: new Date().toISOString(),
                             duration: durationSecs
                         })
 
                     if (updateError) {
                         console.error(updateError);
-                        return reply.code(500).send({ error: "Failed to update dock bay status" });
+                        return reply.code(500).send({ error: "Failed to update dock turnover" });
                     }
                     // Broadcast turnover
                     broadcaster.broadcast({
