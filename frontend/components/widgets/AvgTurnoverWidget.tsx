@@ -17,7 +17,8 @@ export default function AvgTurnoverWidget() {
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
             if(msg.type === "dock_turnover"){
-                setAvgTurnover(msg.payload.turnover);
+                const payload = msg.payload;
+                setAvgTurnover(payload.turnover)
             }
         };
 
@@ -36,8 +37,8 @@ export default function AvgTurnoverWidget() {
                 />
             }
             iconColor="#f59e0b"
-            title="AVERAGE TURNOVER"
-            value={avgTurnover + " secs"}
+            title="LAST TURNOVER"
+            value= {avgTurnover}
         />
     );
 }

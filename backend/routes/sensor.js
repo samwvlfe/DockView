@@ -1,4 +1,6 @@
 // POST Sensor Data
+import { name } from '../../frontend/node_modules/eslint/lib/rules/utils/ast-utils';
+import AvgTurnoverWidget from '../../frontend/components/widgets/AvgTurnoverWidget';
 
 const broadcaster = require("../lib/broadcaster");
 
@@ -6,39 +8,38 @@ module.exports = async function (fastify, opts) {
     fastify.post("/sensor", async (request, reply) => {
         try {
             const { sensor_id, dock_bay_id, event_type, payload } = request.body;
+            const NOW = new Date().toISOString();
 
             // Validate input
             if (!sensor_id || !dock_bay_id || !event_type) {
                 return reply.code(400).send({ error: "Missing required fields" });
             }
 
-            // Look up sensor
+            // Get all values for sensor associated with event
             const { data: sensor, error: sensorError } = await fastify.supabase
                 .from("sensors")
                 .select("*")
-                .eq("id", sensor_id)
+                .eq("id", sensor_id) //WHERE clause
                 .single();
-
             if (sensorError || !sensor) {
                 return reply.code(404).send({ error: "Sensor not found" });
             }
 
-            // Look up dock bay to get CURRENT status
+            // Get dock bay associated with sensor event
             const { data: dockBay, error: dockBayError } = await fastify.supabase
                 .from("dock_bays")
                 .select("*")
-                .eq("id", dock_bay_id)
+                .eq("id", dock_bay_id) //WHERE clause
                 .single();
-
             if (dockBayError || !dockBay) {
                 return reply.code(404).send({ error: "Dock bay not found" });
             }
 
-            //store current associated dock bay status
+            // Store old status for comparison
             const oldStatus = dockBay.status;
-            let newStatus = oldStatus;
+            let newStatus = oldStatus; //default to old value, could change below
 
-            // Create sensor event in DB
+            // Insert event into sensor_events table
             const { data: event, error: eventError } = await fastify.supabase
                 .from("sensor_events")
                 .insert({
@@ -49,34 +50,32 @@ module.exports = async function (fastify, opts) {
                 })
                 .select()
                 .single();
-
             if (eventError) {
                 console.error(eventError);
                 return reply.code(500).send({ error: "Failed to insert sensor event" });
             }
 
-            // Decide what event means
+            // will be set with action taken
             let actionType = null;
 
-            if (event_type === "manual change - POST") {  //add more event_types for different sensor actions
+            if (event_type === "manual change - POST") {
                 newStatus = payload.open ? "occupied" : "idle";
-                actionType = "update_status";
 
-                // Update dock bay status
+                // Update status in dock_bays table
                 const { error: updateError } = await fastify.supabase
                     .from("dock_bays")
                     .update({ 
                         status: newStatus,
-                        status_changed_at: new Date().toISOString()
+                        status_changed_at: NOW
                     })
-                    .eq("id", dock_bay_id);
+                    .eq("id", dock_bay_id); //WHERE clause
 
                 if (updateError) {
                     console.error(updateError);
                     return reply.code(500).send({ error: "Failed to update dock bay status" });
                 }
 
-                // Broadcast update via WebSocket
+                // Broadcast status update to cards on dashboard - realtime 
                 broadcaster.broadcast({
                     type: "dock_status_update",
                     payload: {
@@ -84,73 +83,47 @@ module.exports = async function (fastify, opts) {
                         old_status: oldStatus,
                         new_status: newStatus,
                         event_type,
-                        status_changed_at: new Date().toISOString()
+                        status_changed_at: NOW
                     }
                 });
-
+                
                 // DOCK BAY UPDATED TO OCCUPIED
                 if (oldStatus === "idle" && newStatus === "occupied") {
-                    // Update last_occupied_at timestamp
+                    actionType = `${dockBay.name} marked occupied`;
+                    
+                    // update currLoad_started_at value to NOW()
                     const { error: timeError } = await fastify.supabase
-                        .from("dock_bays")
-                        .update({ 
-                            last_occupied_at: new Date().toISOString()
-                        })
-                        .eq("id", dock_bay_id);
-
+                    .from("dock_bays")
+                    .update({ 
+                        currLoad_started_at: NOW
+                    })
+                    .eq("id", dock_bay_id); //WHERE clause
                     if (timeError) {
                         console.error(timeError);
                         return reply.code(500).send({ error: "Failed to update last occupied time" });
                     }
                 }
+                
+                let turnoverTime = null;
 
-                // DOCK BAY UPDATED TO OPEN
+                // DOCK BAY UPDATED TO IDLE
                 if (oldStatus === "occupied" && newStatus === "idle") {
-                    // Broadcast load completed to widgets
-                    const completedAt = new Date().toISOString();
-
-                    broadcaster.broadcast({
-                        type: "load_completed",
-                        payload: {
-                            dock_bay_id,
-                            completed_at: completedAt
-                        }
-                    });
-
-                    // compute duration safely — ensure we have a valid last_occupied_at
-                    let durationSecs = 0;
-                    if (dockBay && dockBay.last_occupied_at) {
-                        const startedLoad = new Date(dockBay.last_occupied_at);
+                    actionType = `${dockBay.name} marked idle`;
+                    // compute duration of turnover
+                    if(dockBay && dockBay.currLoad_started_at){
+                        //get time the load started then compute
+                        const startedLoad = new Date(dockBay.currLoad_started_at);
                         if (!isNaN(startedLoad.getTime())) {
-                            durationSecs = (new Date(completedAt).getTime() - startedLoad.getTime()) / 1000;
-                        } else {
-                            console.warn("Invalid last_occupied_at for dock:", dock_bay_id, dockBay.last_occupied_at);
+                            turnoverTime = (new Date(NOW).getTime() - startedLoad.getTime()) / 1000;
                         }
-                    } else {
-                        console.warn("Missing last_occupied_at for dock:", dock_bay_id);
-                    }
-
-                    // Insert turnover row (use dock_bay_id to match other tables)
-                    const { error: turnoverError } = await fastify.supabase
-                        .from("dock_turnovers")
-                        .insert({
-                            dock_bay_id: dock_bay_id,
-                            started_at: dockBay?.last_occupied_at ?? null,
-                            completed_at: completedAt,
-                            duration: durationSecs
-                        });
-
-                    if (turnoverError) {
-                        console.error("Failed to insert dock turnover:", turnoverError);
-                        return reply.code(500).send({ error: "Failed to update dock turnover" });
                     }
 
                     // Broadcast turnover
                     broadcaster.broadcast({
                         type: "dock_turnover",
                         payload: {
-                            dock_bay_id,
-                            duration: durationSecs
+                            dock_bay_id: dock_bay_id,
+                            duration: turnoverTime
                         }
                     });
                 }
@@ -160,11 +133,11 @@ module.exports = async function (fastify, opts) {
                 const { error: historyError } = await fastify.supabase
                     .from("dock_bay_history")
                     .insert({
-                    dock_bay_id,
-                    old_status: oldStatus,
-                    new_status: newStatus,
-                    reason: event_type,
-                    event_id: event.id
+                        dock_bay_id,
+                        old_status: oldStatus,
+                        new_status: newStatus,
+                        reason: event_type,
+                        event_id: event.id
                     });
 
                 if (historyError) {
