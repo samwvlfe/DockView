@@ -62,18 +62,35 @@ module.exports = async function (fastify, opts) {
                 newStatus = payload.open ? "occupied" : "idle";
                 actionType = "update_status";
 
-                // Update dock bay status
-                const { error: updateError } = await fastify.supabase
-                    .from("dock_bays")
-                    .update({ 
-                        status: newStatus,
-                        status_changed_at: new Date().toISOString()
-                     })
-                    .eq("id", dock_bay_id);
+                // Update dock bay status. Update last_occupied_at timestamp if becoming occupied
+                if(newStatus === "occupied"){
+                    const { error: updateError } = await fastify.supabase
+                        .from("dock_bays")
+                        .update({ 
+                            status: newStatus,
+                            status_changed_at: new Date().toISOString(),
+                            last_occupied_at: new Date().toISOString()
+                        })
+                        .eq("id", dock_bay_id);
 
-                if (updateError) {
-                    console.error(updateError);
-                    return reply.code(500).send({ error: "Failed to update dock bay status" });
+                    if (updateError) {
+                        console.error(updateError);
+                        return reply.code(500).send({ error: "Failed to update dock bay status" });
+                    }
+                }
+                else{
+                    const { error: updateError } = await fastify.supabase
+                        .from("dock_bays")
+                        .update({ 
+                            status: newStatus,
+                            status_changed_at: new Date().toISOString()
+                        })
+                        .eq("id", dock_bay_id);
+
+                    if (updateError) {
+                        console.error(updateError);
+                        return reply.code(500).send({ error: "Failed to update dock bay status" });
+                    }
                 }
 
                 // Broadcast update via WebSocket
