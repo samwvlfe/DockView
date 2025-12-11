@@ -24,7 +24,7 @@ export interface LoadCompletedMessage {
 // DOCK TURNOVER MESSAGE
 export interface DockTurnoverPayload {
     dock_bay_id: string;
-    duration: number;
+    duration: string;
 }
 export interface DockTurnoverMessage {
     type: "dock_turnover";

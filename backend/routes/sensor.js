@@ -112,6 +112,20 @@ module.exports = async function (fastify, opts) {
                 }
                 
                 let turnoverTime = null;
+                function formatDuration(seconds) {
+                    if (seconds === null || isNaN(seconds)) return "—";
+                    const total = Math.max(0, seconds);
+                    let mins = Math.floor(total / 60);
+                    let secs = Math.round(total - mins * 60);
+                    if (secs === 60) {
+                        mins += 1;
+                        secs = 0;
+                    }
+                    if (mins > 0) {
+                        return `${mins} mins ${secs} secs`;
+                    }
+                    return `${secs} secs`;
+                }
 
                 // DOCK BAY UPDATED TO IDLE
                 if (oldStatus === "occupied" && newStatus === "idle") {
@@ -130,7 +144,7 @@ module.exports = async function (fastify, opts) {
                         type: "dock_turnover",
                         payload: {
                             dock_bay_id: dock_bay_id,
-                            duration: turnoverTime
+                            duration: formatDuration(turnoverTime)
                         }
                     });
                 }
@@ -144,7 +158,8 @@ module.exports = async function (fastify, opts) {
                         old_status: oldStatus,
                         new_status: newStatus,
                         reason: event_type,
-                        event_id: event.id
+                        event_id: event.id, 
+                        turnover_time: turnoverTime
                     });
 
                 if (historyError) {
