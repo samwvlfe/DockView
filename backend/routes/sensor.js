@@ -106,33 +106,45 @@ module.exports = async function (fastify, opts) {
 
                 // DOCK BAY UPDATED TO OPEN
                 if (oldStatus === "occupied" && newStatus === "idle") {
-                    //boradcast load completed to WIDGET
+                    // Broadcast load completed to widgets
+                    const completedAt = new Date().toISOString();
+
                     broadcaster.broadcast({
                         type: "load_completed",
                         payload: {
                             dock_bay_id,
-                            completed_at: new Date().toISOString()
+                            completed_at: completedAt
                         }
                     });
 
-                    //insert into dock_turnovers table
-                    const startedLoad = new Date(dockBay.last_occupied_at);
-                    const completed_at = new Date().toISOString();
-                    const durationSecs = (new Date(completed_at).getTime() - startedLoad.getTime()) / 1000;
+                    // compute duration safely — ensure we have a valid last_occupied_at
+                    let durationSecs = 0;
+                    if (dockBay && dockBay.last_occupied_at) {
+                        const startedLoad = new Date(dockBay.last_occupied_at);
+                        if (!isNaN(startedLoad.getTime())) {
+                            durationSecs = (new Date(completedAt).getTime() - startedLoad.getTime()) / 1000;
+                        } else {
+                            console.warn("Invalid last_occupied_at for dock:", dock_bay_id, dockBay.last_occupied_at);
+                        }
+                    } else {
+                        console.warn("Missing last_occupied_at for dock:", dock_bay_id);
+                    }
 
-                    const { error: updateError } = await fastify.supabase
+                    // Insert turnover row (use dock_bay_id to match other tables)
+                    const { error: turnoverError } = await fastify.supabase
                         .from("dock_turnovers")
-                        .insert({ 
-                            dock_uuid: dock_bay_id,
-                            started_at: dockBay.last_occupied_at,
-                            completed_at: new Date().toISOString(),
+                        .insert({
+                            dock_bay_id: dock_bay_id,
+                            started_at: dockBay?.last_occupied_at ?? null,
+                            completed_at: completedAt,
                             duration: durationSecs
-                        })
+                        });
 
-                    if (updateError) {
-                        console.error(updateError);
+                    if (turnoverError) {
+                        console.error("Failed to insert dock turnover:", turnoverError);
                         return reply.code(500).send({ error: "Failed to update dock turnover" });
                     }
+
                     // Broadcast turnover
                     broadcaster.broadcast({
                         type: "dock_turnover",
