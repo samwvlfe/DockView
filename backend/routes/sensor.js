@@ -116,9 +116,9 @@ module.exports = async function (fastify, opts) {
                     });
 
                     //insert into dock_turnovers table
-                    startedLoad = new Date(dockBay.last_occupied_at);
-                    completed_at = new Date().toISOString();
-                    durationSecs = (new Date(completed_at).getTime() - startedLoad.getTime()) / 1000;
+                    const startedLoad = new Date(dockBay.last_occupied_at);
+                    const completed_at = new Date().toISOString();
+                    const durationSecs = (new Date(completed_at).getTime() - startedLoad.getTime()) / 1000;
 
                     const { error: updateError } = await fastify.supabase
                         .from("dock_turnovers")
