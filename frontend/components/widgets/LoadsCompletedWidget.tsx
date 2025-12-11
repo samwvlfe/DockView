@@ -6,26 +6,24 @@ import comp from "@/public/completed-icon.png";
 import { fetchLoadsCompleted } from "@/lib/api";
 
 export default function LoadsCompletedWidget() {
-    const [count, setCount] = useState<number>(0);
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
-        async function fetchLoadsCompletedData() {
-            try {
-                const data = await fetchLoadsCompleted();
-                setCount(data.length);
-            } catch (error) {
-                console.error("Error fetching loads completed:", error);
+        // Initially fetch from DB
+        fetchLoadsCompleted().then(data => {
+            setCount(data.length);
+        });
+        //connect to websocket for real-time updates
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            if(msg.type === "load_completed"){
+                setCount(prevCount => prevCount + 1);
             }
-        }
+        };
 
-        // Initial fetch
-        fetchLoadsCompletedData();
-
-        // Set interval to fetch periodically
-        //change to connect to web socket later
-        const interval = setInterval(fetchLoadsCompletedData, 1000); 
-        return () => clearInterval(interval);
-
+        return () => ws.close();
     }, []);
 
     return (
@@ -41,7 +39,7 @@ export default function LoadsCompletedWidget() {
             }
             iconColor="#14b8a6"
             title="LOADS COMPLETED"
-            value={count}
+            value= {count}
         />
     );
 }
