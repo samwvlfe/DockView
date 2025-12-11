@@ -18,6 +18,7 @@ export default function AvgTurnoverWidget() {
             const msg = JSON.parse(event.data);
             if(msg.type === "dock_turnover"){
                 const payload = msg.payload;
+                console.log(payload);
                 setAvgTurnover(payload.turnover)
             }
         };
