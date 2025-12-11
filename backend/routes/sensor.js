@@ -1,7 +1,4 @@
 // POST Sensor Data
-import { name } from '../../frontend/node_modules/eslint/lib/rules/utils/ast-utils';
-import AvgTurnoverWidget from '../../frontend/components/widgets/AvgTurnoverWidget';
-
 const broadcaster = require("../lib/broadcaster");
 
 module.exports = async function (fastify, opts) {
@@ -34,6 +31,8 @@ module.exports = async function (fastify, opts) {
             if (dockBayError || !dockBay) {
                 return reply.code(404).send({ error: "Dock bay not found" });
             }
+
+            console.log(dockBay);
 
             // Store old status for comparison
             const oldStatus = dockBay.status;
@@ -89,7 +88,7 @@ module.exports = async function (fastify, opts) {
                 
                 // DOCK BAY UPDATED TO OCCUPIED
                 if (oldStatus === "idle" && newStatus === "occupied") {
-                    actionType = `${dockBay.name} marked occupied`;
+                    actionType = "dock marked occupied";
                     
                     // update currLoad_started_at value to NOW()
                     const { error: timeError } = await fastify.supabase
@@ -108,7 +107,7 @@ module.exports = async function (fastify, opts) {
 
                 // DOCK BAY UPDATED TO IDLE
                 if (oldStatus === "occupied" && newStatus === "idle") {
-                    actionType = `${dockBay.name} marked idle`;
+                    actionType = "dock marked idle";
                     // compute duration of turnover
                     if(dockBay && dockBay.currLoad_started_at){
                         //get time the load started then compute
