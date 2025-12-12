@@ -50,13 +50,7 @@ export default function Home() {
     initializeData();
   }, []);
 
-  useEffect(() => {
-    if (!selectedDockID) return;
 
-    alert(`Selected dock ID saved:\n${selectedDockID}`);
-  }, [selectedDockID]);
-
-  
   return (
       <main>
         <Header />
@@ -69,6 +63,7 @@ export default function Home() {
           <InfoContainer 
             docks={docks} 
             selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]}
+            selectedDockID={selectedDockID}
             />
           </div>
       </main>
