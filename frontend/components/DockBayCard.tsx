@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import styles from "./DockBayCard.module.css";
 
 interface DockBayCardProps {
-  id: number;
+  id: string;
   friendly_id: number;
   name: string;
   status: string;
   status_changed_at?: string;
+  onClick: () => void;
 }
 
-export default function DockBayCard({ id, friendly_id, name, status, status_changed_at }: DockBayCardProps) {
+export default function DockBayCard({ id, friendly_id, name, status, status_changed_at, onClick }: DockBayCardProps) {
   // Keep track of time since status change
   const [elapsed, setElapsed] = useState("00:00:00");
 
@@ -45,7 +46,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
   }, [status, status_changed_at]);
 
   return (
-    <div className={`${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`}>
+    <div className={`${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`} onClick={onClick}>
         <div className="apart">
             <div className={styles["bay-name"]}>{name}</div>
             <div className={styles["bay-status"]}>

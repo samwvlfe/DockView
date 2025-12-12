@@ -5,9 +5,10 @@ import { DockBay } from "@/types/interfaces";
 
 interface DockBayGridProps {
     docks: DockBay[];
+    onSelectDock: (id: string) => void;
 }
 
-export default function DockGridCont({ docks }: DockBayGridProps) {
+export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) {
     // Make a shallow copy and sort so 'occupied' items come first.
     const sortedDocks = [...docks].sort((a, b) => {
         const aOcc = (a.status ?? "").toLowerCase().trim() === "occupied";
@@ -17,7 +18,7 @@ export default function DockGridCont({ docks }: DockBayGridProps) {
         if (!aOcc && bOcc) return 1;
 
         // Same status -> deterministic fallback (by id)
-        return a.id - b.id;
+        return a.friendly_id - b.friendly_id;
     });
 
     const activeCount = sortedDocks.filter(d => (d.status ?? "").toLowerCase().trim() === "occupied").length;
@@ -39,6 +40,7 @@ export default function DockGridCont({ docks }: DockBayGridProps) {
                             name={dock.name}
                             status={dock.status}
                             status_changed_at={dock.status_changed_at}
+                            onClick={() => onSelectDock(dock.id)}
                         />
                     ))}
                 </div>

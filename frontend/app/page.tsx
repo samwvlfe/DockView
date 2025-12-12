@@ -12,6 +12,7 @@ import { DockBay } from "@/types/interfaces";
 export default function Home() {
   // Hold dock data here
   const [docks, setDocks] = useState<DockBay[]>([]);
+  const [selectedDockID, setselectedDockID] = useState<string | null>(null);
 
   // Fetch dock data first then listen for WS updates
   useEffect(() => {
@@ -49,13 +50,26 @@ export default function Home() {
     initializeData();
   }, []);
 
+  useEffect(() => {
+    if (!selectedDockID) return;
 
+    alert(`Selected dock ID saved:\n${selectedDockID}`);
+  }, [selectedDockID]);
+
+  
   return (
       <main>
         <Header />
         <div className="content">  
-          <DockGridCont docks={docks}/>
-          <InfoContainer docks={docks} selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]} />
+          <DockGridCont 
+            docks={docks}
+            onSelectDock={setselectedDockID}
+          />
+
+          <InfoContainer 
+            docks={docks} 
+            selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]}
+            />
           </div>
       </main>
   );

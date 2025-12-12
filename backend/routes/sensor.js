@@ -147,6 +147,15 @@ module.exports = async function (fastify, opts) {
                             duration: formatDuration(turnoverTime)
                         }
                     });
+
+                    // Broadcast load complete to widget
+                    broadcaster.broadcast({
+                        type: "load_completed",
+                        payload: {
+                            dock_bay_id,
+                            completed_at: NOW
+                        }
+                    });
                 }
 
 
