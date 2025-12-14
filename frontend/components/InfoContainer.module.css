@@ -1,6 +1,7 @@
 .info-cont{
   display: flex;
   flex-direction: column;
+  gap: var(--padd);
 }
 .widgets-grid{
     display: flex;

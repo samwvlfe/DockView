@@ -2,19 +2,19 @@
 import { useEffect, useState } from "react";
 import styles from "./InfoContainer.module.css";
 import { WidgetKey, WIDGET_BANK } from "./widgets/WidgetBank";
-import { DockBay } from "@/types/interfaces";
+import { DockBay, DockInfoHistory } from "@/types/interfaces";
 import { fetchDockByID } from "@/lib/api";
-import SetDockInfoCard from "./DockInfoCard";
+import DockInfoCard from "./DockInfoCard";
 
 interface InfoContainerProps {
   docks: DockBay[];
   selectedWidgets: WidgetKey[];
   selectedDockID: string | null;
-}   
+}
 
 export default function InfoContainer({ docks, selectedWidgets, selectedDockID }: InfoContainerProps) {
 
-  const [selectedDock, setSelectedDock] = useState<DockBay | null>(null);
+  const [selectedDock, setSelectedDock] = useState<DockInfoHistory | null>(null);
 
   useEffect(() => {
     if (!selectedDockID) {
@@ -25,7 +25,17 @@ export default function InfoContainer({ docks, selectedWidgets, selectedDockID }
     const loadSelDock = async () => {
       try{
         const dock = await fetchDockByID(selectedDockID);
-        setSelectedDock(dock);
+
+        const MappedDock: DockInfoHistory = {
+          id: dock.id,
+          friendly_id: dock.friendly_id,
+          name: dock.name,
+          status: dock.status,
+          status_changed_at: dock.status_changed_at,
+          history: dock.dock_bay_history ?? []
+        };
+
+        setSelectedDock(MappedDock);
       } catch (err) {
         console.error("failed to load selected dock", err);
         setSelectedDock(null);
@@ -38,9 +48,9 @@ export default function InfoContainer({ docks, selectedWidgets, selectedDockID }
 
   return (
     <div className="info-cont">
-      {selectedDock && (<div className="widget">Selected Dock ID:{selectedDock.id}</div>)}
+      {selectedDock && <DockInfoCard dock={selectedDock}/>}
       <div className={styles["widgets-grid"]}>
-          {selectedWidgets.map(key => {
+          {selectedWidgets.map(key => { 
               const Widget = WIDGET_BANK[key];
               return <Widget key={key} docks={docks}/>;
           })}

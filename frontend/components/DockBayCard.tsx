@@ -55,7 +55,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
                 </div>
             </div>
         </div>
-        <div className={styles.hist}><span>see history</span></div>
+        <div className={styles.hist}><span>see info</span></div>
     </div>
   );
 }

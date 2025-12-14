@@ -10,20 +10,39 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
-    // GET all info for bay by UUID
+    // GET all info for info card
     fastify.get("/api/dock/:id", async (request, reply) => {
         const { id } = request.params;
+        //get date 7 days ago
+        const sevenDays = new Date();
+        sevenDays.setDate(sevenDays.getDate() - 7);
 
         const { data, error } = await fastify.supabase
             .from("dock_bays")
-            .select("*")
+            //select all from dock_bays AND dock_bay_history
+            .select(
+                `*,
+                dock_bay_history (
+                    id,
+                    old_status,
+                    new_status,
+                    reason,
+                    created_at,
+                    turnover_time
+                )`)
             .eq("id", id)
+            .gte("dock_bay_history.created_at", sevenDays.toISOString())
+            .order("created_at", {
+                foreignTable: "dock_bay_history",
+                ascending: false
+            })
             .single();
 
         if (error) {
             reply.code(404);
             return {error: `Failed to fetch dock ${id}`}
         }
+
         return data;
     });
 
