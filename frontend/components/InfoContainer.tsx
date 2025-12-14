@@ -47,7 +47,7 @@ export default function InfoContainer({ docks, selectedWidgets, selectedDockID }
 
 
   return (
-    <div className="info-cont">
+    <div className={styles["info-cont"]}>
       {selectedDock && <DockInfoCard dock={selectedDock}/>}
       <div className={styles["widgets-grid"]}>
           {selectedWidgets.map(key => { 
