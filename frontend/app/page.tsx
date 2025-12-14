@@ -62,7 +62,7 @@ export default function Home() {
 
           <InfoContainer 
             docks={docks} 
-            selectedWidgets={["utilization", "loadsCompleted", "turnover", "queued"]}
+            selectedWidgets={["utilization", "loadsCompleted", "turnover"]}
             selectedDockID={selectedDockID}
             />
           </div>

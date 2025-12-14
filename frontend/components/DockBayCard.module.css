@@ -1,13 +1,6 @@
 .bay{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
     width: 16vw;
     min-width: 200px;
-    background-color: #0a0f14;
-    padding: 10px;
-    border-radius: var(--radius);
-    border: var(--border);
   }
   .bay:hover{
     box-shadow: 0 0 12px rgb(61, 68, 81, .8);

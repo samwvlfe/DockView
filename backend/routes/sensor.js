@@ -1,5 +1,6 @@
 // POST Sensor Data
 const broadcaster = require("../lib/broadcaster");
+import { secondsToHuman } from "@/lib/helpers";
 
 module.exports = async function (fastify, opts) {
     fastify.post("/sensor", async (request, reply) => {
@@ -112,20 +113,6 @@ module.exports = async function (fastify, opts) {
                 }
                 
                 let turnoverTime = null;
-                function formatDuration(seconds) {
-                    if (seconds === null || isNaN(seconds)) return "—";
-                    const total = Math.max(0, seconds);
-                    let mins = Math.floor(total / 60);
-                    let secs = Math.round(total - mins * 60);
-                    if (secs === 60) {
-                        mins += 1;
-                        secs = 0;
-                    }
-                    if (mins > 0) {
-                        return `${mins} mins ${secs} secs`;
-                    }
-                    return `${secs} secs`;
-                }
 
                 // DOCK BAY UPDATED TO IDLE
                 if (oldStatus === "occupied" && newStatus === "idle") {
@@ -144,7 +131,7 @@ module.exports = async function (fastify, opts) {
                         type: "dock_turnover",
                         payload: {
                             dock_bay_id: dock_bay_id,
-                            duration: formatDuration(turnoverTime)
+                            duration: secondsToHuman(turnoverTime)
                         }
                     });
 
