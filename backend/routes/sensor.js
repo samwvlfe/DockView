@@ -1,6 +1,6 @@
 // POST Sensor Data
 const broadcaster = require("../lib/broadcaster");
-const { secondsToHuman } = require("../lib/helpers");
+const { secondsToHuman } = require("../lib/helpers/time");
 
 module.exports = async function (fastify, opts) {
     fastify.post("/sensor", async (request, reply) => {

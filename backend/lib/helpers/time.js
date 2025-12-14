@@ -1,9 +1,9 @@
-// lib/helpers/time.ts
+// lib/helpers/time.js
 
 /**
  * Converts seconds to HH:MM:SS
  */
-export function secondsToHMS(totalSeconds?: number | null): string {
+function secondsToHMS(totalSeconds) {
   if (!totalSeconds || totalSeconds < 0) return "00:00:00";
 
   const hrs = Math.floor(totalSeconds / 3600);
@@ -18,7 +18,7 @@ export function secondsToHMS(totalSeconds?: number | null): string {
 /**
  * Converts seconds to human readable: Xh Xm Xs
  */
-export function secondsToHuman(totalSeconds?: number | null): string {
+function secondsToHuman(totalSeconds) {
   if (!totalSeconds || totalSeconds < 0) return "0s";
 
   const hrs = Math.floor(totalSeconds / 3600);
@@ -36,10 +36,16 @@ export function secondsToHuman(totalSeconds?: number | null): string {
 /**
  * Returns elapsed time since date
  */
-export function timeSince(date?: string | null): string {
+function timeSince(date) {
   const d = date ? new Date(date) : null;
   if (!d || isNaN(d.getTime())) return "--";
 
   const diffSeconds = Math.floor((Date.now() - d.getTime()) / 1000);
   return secondsToHuman(diffSeconds);
 }
+
+module.exports = {
+  secondsToHMS,
+  secondsToHuman,
+  timeSince
+};

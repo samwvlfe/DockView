@@ -1,10 +1,10 @@
-// lib/helpers/date.ts
+// lib/helpers/date.js
 
 /**
  * Safely converts a date string into a Date object.
  * Returns null if invalid.
  */
-export function parseDate(date?: string | null): Date | null {
+function parseDate(date) {
   if (!date) return null;
 
   const d = new Date(date);
@@ -14,7 +14,7 @@ export function parseDate(date?: string | null): Date | null {
 /**
  * Formats a date into MM/DD/YYYY
  */
-export function formatDate(date?: string | null): string {
+function formatDate(date) {
   const d = parseDate(date);
   if (!d) return "--";
 
@@ -28,7 +28,7 @@ export function formatDate(date?: string | null): string {
 /**
  * Formats date + time: MM/DD/YYYY HH:MM
  */
-export function formatDateTime(date?: string | null): string {
+function formatDateTime(date) {
   const d = parseDate(date);
   if (!d) return "--";
 
@@ -40,3 +40,9 @@ export function formatDateTime(date?: string | null): string {
     minute: "2-digit"
   });
 }
+
+module.exports = {
+  parseDate,
+  formatDate,
+  formatDateTime
+};
