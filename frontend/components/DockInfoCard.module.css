@@ -14,6 +14,7 @@
         font-weight: 600;
         border-bottom: 1px solid #3a3a3a;
         text-transform: uppercase;
+        width: 90%;
     }
     .historyRowCont{
         margin-top: 20px;
