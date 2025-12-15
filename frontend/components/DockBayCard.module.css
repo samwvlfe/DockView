@@ -14,8 +14,6 @@
   }
   .selected{
     border: 2px solid #ffc900;
-    border-radius: var(--radius);
-    padding: 5px;
   }
   .bay-name{
     font-size: 18px;
