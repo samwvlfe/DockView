@@ -24,8 +24,7 @@ export interface DockInfoHistory {
   history: DockHistory[];
 }
 
-
-// export interface DockBayCardProps{
-//   docks: DockBay[];
-//   onSelectDock: (id: number) => void;
-// }
+export interface AvgTurnoverResponse {
+  avg_turnover_time: number | null;
+  turnover_count: number | null;
+}

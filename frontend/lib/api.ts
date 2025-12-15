@@ -1,5 +1,7 @@
 // Fetch database data
 
+import { AvgTurnoverResponse } from "@/types/interfaces";
+
 export async function fetchDocks() {
   const res = await fetch("https://dockview.onrender.com/api/docks");
   if(!res.ok){
@@ -24,10 +26,10 @@ export async function fetchLoadsCompleted() {
   return res.json();
 }
 
-export async function fetchAvgTurnoverTime(days:string){
+export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResponse> {
   const res = await fetch(`https://dockview.onrender.com/api/stats/turnover/${days}`);
   if(!res.ok){
     throw new Error('Failed to fetch avg turnover');
-  }
+  } 
   return res.json();
 }
