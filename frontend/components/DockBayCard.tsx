@@ -18,7 +18,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
 
   useEffect(() => {
     // If dock is not occupied or missing timestamp → no timer needed
-    if (status !== "occupied" || !status_changed_at) {
+    if (status !== 'occupied' || !status_changed_at) {
       setElapsed("closed");
       return;
     }
@@ -53,7 +53,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
         stack
         ${styles.bay} 
         ${status === 'occupied' ? styles["active-border"] : ''}
-        ${isSelected ? "selected" : ''}
+        ${isSelected ? 'selected' : ''}
       `}
       onClick={onClick}
     >

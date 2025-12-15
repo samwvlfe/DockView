@@ -13,9 +13,9 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
             <div className="stack gap">
                 <div className="widget-hdr">Dock Info</div>
                 <div className="nested-widget stack gap" style={{minWidth: "110px"}}>
-                    <div><span className="bold">Name: </span><span className="orgColor">{dock.name}</span></div>
-                    <div><span className="bold">Status: </span><span className="orgColor">{dock.status}</span></div>
-                    <div><span className="bold">ID: </span><span className="orgColor">{dock.friendly_id}</span></div>
+                    <div><span className="bold">Name: </span><span>{dock.name}</span></div>
+                    <div><span className="bold">Status: </span><span className={dock.status === 'occupied' ? 'active-font' : ''}>{dock.status}</span></div>
+                    <div><span className="bold">ID: </span><span>{dock.friendly_id}</span></div>
                 </div>
             </div>
             <div className="stack gap">
