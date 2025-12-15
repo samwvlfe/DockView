@@ -8,7 +8,7 @@
     .historyHeader{
         position: absolute;
         display: grid;
-        grid-template-columns: 1.5fr 3fr 2fr;
+        grid-template-columns: 1.8fr 3.5fr 3fr;
         padding: 0 10px 8px;
         gap: 8px;
         font-weight: 600;
@@ -20,12 +20,12 @@
         margin-top: 33px;
         display: flex;
         flex-direction: column;
-        max-height: 29.4vh;
+        max-height: 27vh;
         overflow: auto;
     }
     .historyRow{
         display: grid;
-        grid-template-columns: 1.5fr 3fr 2fr;
+        grid-template-columns: 1.8fr 3.5fr 3fr;
         gap: 8px;
         padding: 8px 10px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
