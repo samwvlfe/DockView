@@ -25,7 +25,7 @@ export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) 
 
     return (
         <div className='row'>
-            <div className="widget stack">
+            <div className="widget stack gap">
                 <div className="apart">
                     <div className="widget-hdr">Dock Status Overview</div>
                     <div className="widget-hdr active-font">Active Docks: {activeCount}</div>
@@ -41,6 +41,7 @@ export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) 
                             status={dock.status}
                             status_changed_at={dock.status_changed_at}
                             onClick={() => onSelectDock(dock.id)}
+                            isSelected={true}
                         />
                     ))}
                 </div>

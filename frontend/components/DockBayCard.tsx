@@ -9,9 +9,10 @@ interface DockBayCardProps {
   status: string;
   status_changed_at?: string;
   onClick: () => void;
+  isSelected: boolean;
 }
 
-export default function DockBayCard({ id, friendly_id, name, status, status_changed_at, onClick }: DockBayCardProps) {
+export default function DockBayCard({ id, friendly_id, name, status, status_changed_at, onClick, isSelected}: DockBayCardProps) {
   // Keep track of time since status change
   const [elapsed, setElapsed] = useState("00:00:00");
 
@@ -46,16 +47,25 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
   }, [status, status_changed_at]);
 
   return (
-    <div className={`nested-widget stack ${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`} onClick={onClick}>
-        <div className="apart">
-            <div className={styles["bay-name"]}>{name}</div>
-            <div className={styles["bay-status"]}>
-                <div className={`${styles["open-time"]} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
-                    {elapsed}
-                </div>
-            </div>
-        </div>
-        <div className={styles.hist}><span>see info</span></div>
+    <div 
+      className={`
+        nested-widget
+        stack
+        ${styles.bay} 
+        ${status === 'occupied' ? styles["active-border"] : ''}
+        ${isSelected ? styles.selected : ''}
+      `}
+      onClick={onClick}
+    >
+      <div className="apart">
+          <div className={styles["bay-name"]}>{name}</div>
+          <div className={styles["bay-status"]}>
+              <div className={`${styles["open-time"]} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
+                  {elapsed}
+              </div>
+          </div>
+      </div>
+      <div className={styles.hist}><span>see info</span></div>
     </div>
   );
 }

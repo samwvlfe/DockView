@@ -10,7 +10,7 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
     //get dock bay info
     return(
         <div className="widget stack gap">
-            <div className="row gap">
+            <div className={`${styles['info-card']} row gap`}>
                 <div className="nested-widget stack gap" style={{minWidth: "103px"}}>
                     <div className="widget-hdr">Dock Info</div>
                     <div><span className="bold">Name: </span><span className="orgColor">{dock.name}</span></div>
