@@ -6,9 +6,10 @@ import { DockBay } from "@/types/interfaces";
 interface DockBayGridProps {
     docks: DockBay[];
     onSelectDock: (id: string) => void;
+    selectedDockId: string | null;
 }
 
-export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) {
+export default function DockGridCont({ docks, onSelectDock, selectedDockId }: DockBayGridProps) {
     // Make a shallow copy and sort so 'occupied' items come first.
     const sortedDocks = [...docks].sort((a, b) => {
         const aOcc = (a.status ?? "").toLowerCase().trim() === "occupied";
@@ -41,7 +42,7 @@ export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) 
                             status={dock.status}
                             status_changed_at={dock.status_changed_at}
                             onClick={() => onSelectDock(dock.id)}
-                            isSelected={true}
+                            isSelected={dock.id === selectedDockId}
                         />
                     ))}
                 </div>

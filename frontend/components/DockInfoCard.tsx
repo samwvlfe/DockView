@@ -17,7 +17,7 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
                     <div><span className="bold">Status: </span><span className="orgColor">{dock.status}</span></div>
                     <div><span className="bold">ID: </span><span className="orgColor">{dock.friendly_id}</span></div>
                 </div>
-                <div className="nested-widget stack gap">
+                <div className="nested-widget stack gap" style={{flex: "1"}}>
                     <div className="widget-hdr">History</div>
                     <div className={`${styles.historyTable} stack`}>
                         <div className={styles.historyHeader}>
