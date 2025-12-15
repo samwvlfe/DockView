@@ -11,8 +11,8 @@ interface InfoWidgetProps {
 export default function InfoWidget({ icon, iconColor, title, value }: InfoWidgetProps) {
     return (
         
-        <div className="widget">
-            <div className={styles['info-widget-hdr gap']}>
+        <div className="widget stack">
+            <div className={`${styles['info-widget-hdr']} gap`}>
                 <div className={styles['info-widget-icon']} style={{backgroundColor: iconColor}}>
                     {icon}
                 </div>

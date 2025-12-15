@@ -1,7 +1,3 @@
-.info-cont{
-  display: flex;
-  flex-direction: column;
-}
 .widgets-grid{
     display: flex;
     flex-wrap: wrap;

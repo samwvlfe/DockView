@@ -46,7 +46,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
   }, [status, status_changed_at]);
 
   return (
-    <div className={`nested-widget ${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`} onClick={onClick}>
+    <div className={`nested-widget stack ${styles.bay} ${status === 'occupied' ? styles["active-border"] : ''}`} onClick={onClick}>
         <div className="apart">
             <div className={styles["bay-name"]}>{name}</div>
             <div className={styles["bay-status"]}>

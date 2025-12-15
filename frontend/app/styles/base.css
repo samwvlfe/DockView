@@ -6,22 +6,17 @@
 } */
  
 .content{
-  display: flex;
   flex: 1 1 auto;
   align-items: flex-start;
   padding: var(--padd);
-  gap: var(--padd)
 }
 
 .widget{
   flex: 1;
-  display: flex;
-  flex-direction: column;
   border-radius: var(--radius);
   border: var(--border);
   background-color: var(--widget-bkg);
   padding: var(--padd);
-  gap: var(--padd)
   }
   .widget-hdr{
     font-size: 25px;
@@ -33,11 +28,8 @@
   }
 
 .nested-widget{
-  display: flex;
-  flex-direction: column;
   background-color: #0a0f14;
   padding: 10px;
   border-radius: var(--radius);
   border: var(--border);
-  gap: var(--padd);
 }

@@ -9,23 +9,23 @@ interface DockInfoCardProps {
 export default function DockInfoCard({ dock }: DockInfoCardProps){
     //get dock bay info
     return(
-        <div className="widget">
+        <div className="widget stack gap">
             <div className="row gap">
-                <div className="nested-widget">
+                <div className="nested-widget stack gap">
                     <div className="widget-hdr">Dock Info</div>
                     <div><span className="bold">Name: </span><span className="orgColor">{dock.name}</span></div>
                     <div><span className="bold">Status: </span><span className="orgColor">{dock.status}</span></div>
                     <div><span className="bold">ID: </span><span className="orgColor">{dock.friendly_id}</span></div>
                 </div>
-                <div className="nested-widget">
+                <div className="nested-widget stack gap">
                     <div className="widget-hdr">History</div>
-                    <div className={styles.historyTable}>
+                    <div className={`${styles.historyTable} stack`}>
                         <div className={styles.historyHeader}>
                             <span>Update</span>
                             <span>Reason</span>
                             <span>Time</span>
                         </div>
-                        <div className="historyRowCont">
+                        <div className={`${styles.historyRowCont} stack`}>
                             {[...dock.history]
                             .sort((a, b) =>
                                 new Date(b.created_at).getTime() -

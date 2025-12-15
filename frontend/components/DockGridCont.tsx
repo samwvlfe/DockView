@@ -24,14 +24,14 @@ export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) 
     const activeCount = sortedDocks.filter(d => (d.status ?? "").toLowerCase().trim() === "occupied").length;
 
     return (
-        <div className="bays-container">
-            <div className="widget">
+        <div className={`${styles['bays-container']} row`}>
+            <div className="widget stack">
                 <div className="apart">
                     <div className="widget-hdr">Dock Status Overview</div>
                     <div className="widget-hdr active-font">Active Docks: {activeCount}</div>
                 </div>
                 
-                <div className={styles["baylist gap"]}>
+                <div className={`${styles.baylist} gap`}>
                     {sortedDocks.map((dock) => (
                         <DockBayCard
                             key={dock.id}

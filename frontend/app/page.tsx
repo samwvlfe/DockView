@@ -54,7 +54,7 @@ export default function Home() {
   return (
       <main>
         <Header />
-        <div className="content">  
+        <div className="content row gap">  
           <DockGridCont 
             docks={docks}
             onSelectDock={setselectedDockID}
