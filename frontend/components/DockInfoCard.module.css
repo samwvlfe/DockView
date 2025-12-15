@@ -7,23 +7,20 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-top: 8px;
     font-size: 14px;
     }
     .historyHeader{
         display: grid;
-        grid-template-columns: 1fr 1fr 2fr 1.5fr;
+        grid-template-columns: .7fr 1.5fr 2fr;
         gap: 8px;
         padding: 8px 10px;
         font-weight: 600;
         border-bottom: 1px solid #3a3a3a;
-        color: #bfbfbf;
         text-transform: uppercase;
-        font-size: 12px;
     }
     .historyRow{
         display: grid;
-        grid-template-columns: 1fr 1fr 2fr 1.5fr;
+        grid-template-columns: .7fr 1.5fr 2fr;
         gap: 8px;
         padding: 8px 10px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -31,6 +28,7 @@
     }
     .historyRow:hover{
         background: rgba(225, 225, 225, 0.04);
+        cursor: pointer;
     }
     .historyRow span, .historyHeader span {
         white-space: nowrap;

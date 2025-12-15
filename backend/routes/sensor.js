@@ -66,7 +66,7 @@ module.exports = async function (fastify, opts) {
             // will be set with action taken
             let actionType = null;
 
-            if (event_type === "manual change - POST") {
+            if (event_type === "manual change") {
                 newStatus = payload.open ? "occupied" : "idle";
 
                 // Update status in dock_bays table

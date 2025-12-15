@@ -40,3 +40,18 @@ export function formatDateTime(date?: string | null): string {
     minute: "2-digit"
   });
 }
+
+/**
+ * Formats time: MM/DD/YYYY HH:MM + date
+ */
+export function formatTimeDate(date?: string | null): string {
+  const d = parseDate(date);
+  if (!d) return "--";
+
+  return d.toLocaleString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+    day: "2-digit"
+  });
+}
