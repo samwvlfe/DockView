@@ -1,6 +1,5 @@
-import { formatDateTime, formatTimeDate } from "@/lib/helpers";
+import { formatTimeDate } from "@/lib/helpers";
 import styles from "./DockInfoCard.module.css"
-import styless from "./DockBayCard.module.css"
 import { DockInfoHistory } from "@/types/interfaces";
 
 interface DockInfoCardProps {
@@ -10,7 +9,7 @@ interface DockInfoCardProps {
 export default function DockInfoCard({ dock }: DockInfoCardProps){
     //get dock bay info
     return(
-        <div className={`widget row gap ${styless.selected}`}>
+        <div className="widget row gap selected">
             <div className="stack gap">
                 <div className="widget-hdr">Dock Info</div>
                 <div className="nested-widget stack gap" style={{minWidth: "110px"}}>

@@ -53,7 +53,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
         stack
         ${styles.bay} 
         ${status === 'occupied' ? styles["active-border"] : ''}
-        ${isSelected ? styles.selected : ''}
+        ${isSelected ? "selected" : ''}
       `}
       onClick={onClick}
     >

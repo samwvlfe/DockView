@@ -12,9 +12,6 @@
   .bay.active-border:hover{
     box-shadow: 0 0 12px rgba(16, 134, 99, 0.65);
   }
-  .selected{
-    border: 2px solid #ffc900;
-  }
   .bay-name{
     font-size: 18px;
   }
