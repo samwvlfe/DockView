@@ -60,36 +60,43 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
-    //Average turnover from user specified time interval
+    // Average turnover from user-specified time interval
     fastify.get("/api/stats/turnover/:days", async (request, reply) => {
-        const { days } = request.params;
-        const daysNum = Number(days);
+        try {
+            const days = request.params.days;
+            const daysNum = Number(days);
 
-        if (isNaN(daysNum)) {
-            reply.code(400);
-            return { error: "Invalid days parameter" };
-        }
+            if (Number.isNaN(daysNum)) {
+                reply.code(400);
+                return { error: "Invalid days parameter" };
+            }
 
-        // Date X days ago
-        const daysDate = new Date();
-        daysDate.setDate(daysDate.getDate() - daysNum);
+            // Date X days ago
+            const daysDate = new Date();
+            daysDate.setDate(daysDate.getDate() - daysNum);
 
-        const { data, error } = await fastify.supabase
-            .from("dock_bay_history")
-            .select(`
-                avg_turnover_time:turnover_time.avg(),
-                turnover_count:turnover_time.count()               
-            `)
-            .not("turnover_time", "is", null)
-            .eq("new_status", "idle")
-            .gte("created_at", daysDate.toISOString());
+            const { data, error } = await fastify.supabase
+                .from("dock_bay_history")
+                .select(`
+                    avg_turnover_time:turnover_time.avg(),
+                    turnover_count:count(turnover_time)
+                `)
+                .not("turnover_time", "is", null)
+                .eq("new_status", "idle")
+                .gte("created_at", daysDate.toISOString())
+                .single(); // aggregates always return one row
 
-        if (error) {
+            if (error) {
+                console.error("Supabase error:", error);
+                reply.code(500);
+                return { error: "Failed to fetch turnover avg" };
+            }
+
+            return data;
+        } catch (err) {
+            console.error("Route error:", err);
             reply.code(500);
-            return { error: "Failed to fetch turnover avg" };
+            return { error: "Internal server error" };
         }
-
-        return data?.[0] ?? { avg_turnover_time: null };
     });
-
 }
