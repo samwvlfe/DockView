@@ -24,3 +24,7 @@ main{
   flex-direction: column;
   overflow: hidden;
 }
+
+.orgColor{
+  color: var(--ds_orange);
+}

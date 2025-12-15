@@ -10,12 +10,12 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
     //get dock bay info
     return(
         <div className="widget">
-            <div className="row">
+            <div className="row gap">
                 <div className="nested-widget">
                     <div className="widget-hdr">Dock Info</div>
-                    <div><span className="bold">Name: </span>{dock.name}</div>
-                    <div><span className="bold">Status: </span>{dock.status}</div>
-                    <div><span className="bold">ID: </span>{dock.friendly_id}</div>
+                    <div><span className="bold">Name: </span><span className="orgColor">{dock.name}</span></div>
+                    <div><span className="bold">Status: </span><span className="orgColor">{dock.status}</span></div>
+                    <div><span className="bold">ID: </span><span className="orgColor">{dock.friendly_id}</span></div>
                 </div>
                 <div className="nested-widget">
                     <div className="widget-hdr">History</div>
@@ -25,18 +25,20 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
                             <span>Reason</span>
                             <span>Time</span>
                         </div>
-                        {[...dock.history]
-                        .sort((a, b) =>
-                            new Date(b.created_at).getTime() -
-                            new Date(a.created_at).getTime()
-                        )
-                        .map((row) => (
-                            <div key={row.id} className={styles.historyRow}>
-                            <span>{row.new_status}</span>
-                            <span>{row.reason}</span>
-                            <span>{formatTimeDate(row.created_at)}</span>
-                            </div>
-                        ))}
+                        <div className="historyRowCont">
+                            {[...dock.history]
+                            .sort((a, b) =>
+                                new Date(b.created_at).getTime() -
+                                new Date(a.created_at).getTime()
+                            )
+                            .map((row) => (
+                                <div key={row.id} className={styles.historyRow}>
+                                    <span>{row.new_status}</span>
+                                    <span>{row.reason}</span>
+                                    <span>{formatTimeDate(row.created_at)}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

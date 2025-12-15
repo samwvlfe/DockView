@@ -5,11 +5,13 @@
 .row{
     display: flex;
 }
+.gap{
+    gap: 10px;
+}
 .apart{
     display: flex;
     justify-content: space-between;
 }
-
 .active-font{
     color: #108663;
 }

@@ -31,7 +31,7 @@ export default function DockGridCont({ docks, onSelectDock }: DockBayGridProps) 
                     <div className="widget-hdr active-font">Active Docks: {activeCount}</div>
                 </div>
                 
-                <div className={styles.baylist}>
+                <div className={styles["baylist gap"]}>
                     {sortedDocks.map((dock) => (
                         <DockBayCard
                             key={dock.id}

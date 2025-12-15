@@ -12,7 +12,7 @@ export default function InfoWidget({ icon, iconColor, title, value }: InfoWidget
     return (
         
         <div className="widget">
-            <div className={styles['info-widget-hdr']}>
+            <div className={styles['info-widget-hdr gap']}>
                 <div className={styles['info-widget-icon']} style={{backgroundColor: iconColor}}>
                     {icon}
                 </div>
