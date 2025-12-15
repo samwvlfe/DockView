@@ -60,4 +60,33 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
+    //Average turnover from user specified time interval
+    fastify.get("/api/stats/turnover/:days", async (request, reply) => {
+        const { days } = request.params;
+        const daysNum = Number(days);
+
+        if (isNaN(daysNum)) {
+            reply.code(400);
+            return { error: "Invalid days parameter" };
+        }
+
+        // Date X days ago
+        const daysDate = new Date();
+        daysDate.setDate(daysDate.getDate() - daysNum);
+
+        const { data, error } = await fastify.supabase
+            .from("dock_bay_history")
+            .select("avg_turnover_time:turnover_time.avg()")
+            .not("turnover_time", "is", null)
+            .eq("new_status", "idle")
+            .gte("created_at", daysDate.toISOString());
+
+        if (error) {
+            reply.code(500);
+            return { error: "Failed to fetch dock history" };
+        }
+
+        return data?.[0] ?? { avg_turnover_time: null };
+    });
+
 }

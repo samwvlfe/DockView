@@ -23,3 +23,11 @@ export async function fetchLoadsCompleted() {
   }
   return res.json();
 }
+
+export async function fetchAvgTurnoverTime(days:string){
+  const res = await fetch(`https://dockview.onrender.com/api/stats/turnover/${days}`);
+  if(!res.ok){
+    throw new Error('Failed to fetch avg turnover');
+  }
+  return res.json();
+}
