@@ -57,52 +57,37 @@ module.exports = async function (fastify, opts) {
             .gte("created_at", new Date(new Date().setHours(0,0,0,0)).toISOString());
 
         if (error) return { error: "Failed to fetch dock history" };
-        return data;
+    return data;
     });
 
-    // Average turnover from user-specified time interval
+    // Call get_turnover_stats() stored procedure
     fastify.get("/api/stats/turnover/:days", async (request, reply) => {
-        try {
-            const days = request.params.days;
-            const daysNum = Number(days);
+    try {
+        const days = request.params.days;
+        const daysNum = Number(days);
 
-            if (Number.isNaN(daysNum)) {
-                reply.code(400);
-                return { error: "Invalid days parameter" };
-            }
+        if (Number.isNaN(daysNum)) {
+            reply.code(400);
+            return { error: "Invalid days parameter" };
+        }
 
-            // Date X days ago
-            const daysDate = new Date();
-            daysDate.setDate(daysDate.getDate() - daysNum);
+        const { data, error } = await fastify.supabase
+            .rpc('get_turnover_stats', { days_ago: daysNum });
 
-            const { data, error } = await fastify.supabase
-                .from("dock_bay_history")
-                .select(`
-                    turnover_time.avg(),
-                    turnover_time.count()
-                `)
-                .not("turnover_time", "is", null)
-                .eq("new_status", "idle")
-                .gte("created_at", daysDate.toISOString())
-                .maybeSingle();
+        if (error) {
+            console.error("Supabase error:", error);
+            reply.code(500);
+            return { error: "Failed to fetch turnover avg" };
+        }
 
-            if (error) {
-                console.error("Supabase error:", error);
-                reply.code(500);
-                return { error: "Failed to fetch turnover avg" };
-            }
-
-            if (!data) {
-                return {
-                    avg_turnover_time: null,
-                    turnover_count: 0
-                };
-            }
-
+        if (!data || data.length === 0) {
             return {
-                avg_turnover_time: data.avg,
-                turnover_count: data.count
+                avg_turnover_time: null,
+                turnover_count: 0
             };
+        }
+
+            return data[0];
         } catch (err) {
             console.error("Route error:", err);
             reply.code(500);
