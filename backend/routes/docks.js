@@ -78,13 +78,13 @@ module.exports = async function (fastify, opts) {
             const { data, error } = await fastify.supabase
                 .from("dock_bay_history")
                 .select(`
-                    avg_turnover_time:turnover_time.avg(),
-                    turnover_count:count(turnover_time)
+                    turnover_time.avg(),
+                    turnover_time.count()
                 `)
                 .not("turnover_time", "is", null)
                 .eq("new_status", "idle")
                 .gte("created_at", daysDate.toISOString())
-                .single(); // aggregates always return one row
+                .maybeSingle();
 
             if (error) {
                 console.error("Supabase error:", error);
@@ -92,7 +92,17 @@ module.exports = async function (fastify, opts) {
                 return { error: "Failed to fetch turnover avg" };
             }
 
-            return data;
+            if (!data) {
+                return {
+                    avg_turnover_time: null,
+                    turnover_count: 0
+                };
+            }
+
+            return {
+                avg_turnover_time: data.avg,
+                turnover_count: data.count
+            };
         } catch (err) {
             console.error("Route error:", err);
             reply.code(500);
