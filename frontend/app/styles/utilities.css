@@ -22,5 +22,5 @@
     font-weight: bold;
 }
 .selected{
-border: 1px solid #ffc900;
+    border: 1px solid #ffc900 !important;
 }

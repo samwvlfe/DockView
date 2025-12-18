@@ -62,7 +62,7 @@ export default function AvgTurnoverWidget() {
                 />
             }
             iconColor="#f59e0b"
-            title="LAST TURNOVER"
+            title="AVERAGE TURNOVER"
             value= {avgTurnover}
         />
     );
