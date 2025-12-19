@@ -10,15 +10,15 @@ export default function DockInfoCard({ dock }: DockInfoCardProps){
     //get dock bay info
     return(
         <div className="widget row gap selected">
-            <div className="stack gap">
+            <div className={`${styles.dinfo} stack gap`}>
                 <div className="widget-hdr">Dock Info</div>
-                <div className="nested-widget stack gap" style={{minWidth: "110px"}}>
+                <div className="nested-widget stack gap">
                     <div><span className="bold">Name: </span><span>{dock.name}</span></div>
                     <div><span className="bold">Status: </span><span className={dock.status === 'occupied' ? 'active-font' : ''}>{dock.status}</span></div>
                     <div><span className="bold">ID: </span><span>{dock.friendly_id}</span></div>
                 </div>
             </div>
-            <div className="stack gap">
+            <div className={`${styles.dhist} stack gap`}>
                 <div className="widget-hdr">History</div>
                 <div className="nested-widget stack gap" style={{flex: "1"}}>
                     <div className={`${styles.historyTable} stack`}>

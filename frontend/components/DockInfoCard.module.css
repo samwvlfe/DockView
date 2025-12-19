@@ -1,3 +1,10 @@
+.dinfo{
+    width: 25%;
+}
+.dhist{
+    flex: 1;
+}
+
 .historyTable{
     display: flex;
     flex-direction: column;
