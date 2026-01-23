@@ -38,7 +38,10 @@ export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResp
 
 //get sensors by dock_id
 export async function fetchSensorsByDockID(id:string) {
-  const res = await fetch(`http://dockview.onrender.com/sensors/${id}`);
+  const res = await fetch(`http://dockview.onrender.com/sensors/${id}`, {
+    method: "GET",
+  });
+     
   if(!res.ok){
     throw new Error(`Failed to fetch sensors for dock ${id}`);
   }
