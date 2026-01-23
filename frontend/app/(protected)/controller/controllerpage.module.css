@@ -1,0 +1,35 @@
+.selectCont{
+    width: 80vw;
+    margin-bottom: 40px;
+}
+.selectCont label{
+    margin-bottom: 10px;
+}
+.buttonCont{
+    padding: 5px;
+}
+.buttonRow{
+    justify-content: end;
+    overflow: visible;
+}
+.buttonName{
+    font-size: 18px;
+}
+.buttonCont button{
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+.buttonCont button:hover{
+    cursor: pointer;
+}
+.buttonCont button:active{
+    transform: translateY(2px);
+}
+.open{
+    background-color: rgb(46, 147, 46);
+}
+.close{
+    background-color: rgb(208, 0, 0);
+}

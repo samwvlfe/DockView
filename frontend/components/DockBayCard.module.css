@@ -6,21 +6,21 @@
     box-shadow: 0 0 12px rgb(61, 68, 81, .8);
     cursor: pointer;
   }
-  .active-border{
+  .activeBorder{
     border: 1px solid #108663;
   }
-  .bay.active-border:hover{
+  .bay.activeBorder:hover{
     box-shadow: 0 0 12px rgba(16, 134, 99, 0.65);
   }
-  .bay-name{
-    font-size: 18px;
+  .bayName{
+    font-size: 15px;
   }
-  .bay-status{
+  .bayStatus{
     display: flex;
     align-items: center;
   }
-  .open-time{
-    font-size: 18px;
+  .openTime{
+    font-size: 14px;
     color: #108663;
   }
   .hist{
@@ -29,4 +29,16 @@
   }
   .hist span:hover{
     text-decoration: underline;
+  }
+  .sensorCont{
+    width: 50%;
+
+  }
+  .sensStatus{
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+  }
+  .sensName{
+    font-size: 11px;;
   }

@@ -26,13 +26,13 @@ export default function DockGridCont({ docks, onSelectDock, selectedDockId }: Do
 
     return (
         <div className='row'>
-            <div className="widget stack gap">
+            <div className="widget stack gap10">
                 <div className="apart">
                     <div className="widget-hdr">Dock Status Overview</div>
                     <div className="widget-hdr active-font">Active Docks: {activeCount}</div>
                 </div>
                 
-                <div className={`${styles.baylist} gap`}>
+                <div className={`${styles.baylist} gap10`}>
                     {sortedDocks.map((dock) => (
                         <DockBayCard
                             key={dock.id}

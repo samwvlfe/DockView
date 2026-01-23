@@ -19,7 +19,6 @@ module.exports = async function (fastify, opts) {
                 .select("*")
                 .eq("id", sensor_id) //WHERE clause
                 .single();
-            console.log("Sensor:", sensor);
             if (sensorError || !sensor) {
                 return reply.code(404).send({ error: "Sensor not found" });
             }
@@ -31,16 +30,10 @@ module.exports = async function (fastify, opts) {
                 .eq("id", dock_bay_id) //WHERE clause
                 .single();
 
-            console.log("Sensor:", sensor);
-            console.log("DockBay error:", dockBayError);
-            console.log("DockBay:", dockBay);
-
             if (dockBayError || !dockBay) {
                 console.error("Dock bay error:", dockBayError);
                 return reply.code(404).send({ error: "Dock bay not found" });
             }
-
-            console.log('dock bay columns available:', Object.keys(dockBay));
 
 
             // Store old status for comparison
@@ -66,6 +59,7 @@ module.exports = async function (fastify, opts) {
             // will be set with action taken
             let actionType = null;
 
+            
             if (event_type === "manual change") {
                 newStatus = payload.open ? "occupied" : "idle";
 

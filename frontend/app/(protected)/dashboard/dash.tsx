@@ -3,7 +3,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import DockGridCont from "@/components/DockGridCont";
-import Header from "@/components/Header";
 import InfoContainer from "@/components/InfoContainer";
 import { fetchDocks } from "@/lib/api";
 import { DockBay } from "@/types/interfaces";
@@ -52,7 +51,6 @@ export default function DashboardPage() {
 
   return (
         <main>
-            <Header />
             <div className="content row gap10">  
             <DockGridCont 
                 docks={docks}

@@ -5,12 +5,21 @@
 .row{
     display: flex;
 }
-.gap{
+.gap5{
+    gap: 5px;
+}
+.gap10{
     gap: 10px;
+}
+.gap20{
+    gap: 20px;
 }
 .apart{
     display: flex;
     justify-content: space-between;
+}
+.center{
+    align-items: center;
 }
 .active-font{
     color: #108663;
@@ -22,5 +31,12 @@
     font-weight: bold;
 }
 .selected{
-    border: 1px solid #ffc900 !important;
+    border: 1px solid #b89a2e !important;
+}
+
+.sensorColActive{
+    background-color: #108663;
+}
+.sensorColInactive{
+    background-color: red;
 }

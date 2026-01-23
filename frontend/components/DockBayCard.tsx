@@ -50,22 +50,36 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
     <div 
       className={`
         nested-widget
-        stack
+        row apart
         ${styles.bay} 
-        ${status === 'occupied' ? styles["active-border"] : ''}
+        ${status === 'occupied' ? styles.activeBorder : ''}
         ${isSelected ? 'selected' : ''}
       `}
       onClick={onClick}
     >
-      <div className="apart">
-          <div className={styles["bay-name"]}>{name}</div>
-          <div className={styles["bay-status"]}>
-              <div className={`${styles["open-time"]} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
-                  {elapsed}
-              </div>
-          </div>
+      <div className="stack gap5">
+        <div className={styles.bayName}>{name}</div>
+        <div className={styles.bayStatus}>
+            <div className={`${styles.openTime} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
+                {elapsed}
+            </div>
+        </div>
       </div>
-      <div className={styles.hist}><span>see info</span></div>
+
+      <div className={`${styles.sensorCont} stack`}>
+        <div className={`row center gap5`}>
+          <div className={`${styles.sensStatus} sensorColActive`}></div>
+          <div className={styles.sensName}>Truck Restrained</div>
+        </div>
+        <div className={`row center gap5`}>
+          <div className={`${styles.sensStatus} sensorColActive`}></div>
+          <div className={styles.sensName}>Door Open</div>
+        </div>
+        <div className={`row center gap5`}>
+          <div className={`${styles.sensStatus} sensorColActive`}></div>
+          <div className={styles.sensName}>Leveler Deployed</div>
+        </div>
+      </div>
     </div>
   );
 }

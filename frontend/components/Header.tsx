@@ -3,6 +3,8 @@ import styles from "./Header.module.css";
 import Image from "next/image";
 import dockstarLogo from "@/public/dockstar-xmas-logo.png";
 
+import Link from "next/link";
+
 export default function Header() {
   return (
     <div className={`${styles.menu} apart`}>
@@ -15,9 +17,10 @@ export default function Header() {
             priority
         />
         <div className={styles["option-wrapper"]}>
-            <div className={styles.option}>Home</div>
+            <div className={styles.option}><Link href="/controller" target="_blank">Controller</Link></div>
+            {/* <div className={styles.option}>Home</div>
             <div className={styles.option}>Diagnostics</div>
-            <div className={styles.option}>Account</div>
+            <div className={styles.option}>Account</div> */}
         </div>
     </div>
   );
