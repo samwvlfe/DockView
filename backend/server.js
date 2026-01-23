@@ -17,6 +17,8 @@ fastify.register(require("./routes/sensor"));
 fastify.register(require("./routes/docks"));
 fastify.register(require("./routes/index"));
 fastify.register(require("./routes/messages"));
+fastify.register(require("./routes/controller"));
+
 
 
 // Start server

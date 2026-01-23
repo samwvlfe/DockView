@@ -1,4 +1,4 @@
-export function nextDockState(currentState, previousState, conditions, ControllerAction) {
+function nextDockState(currentState, previousState, conditions, ControllerAction) {
     // normalize to an array so your logic is consistent
     const sensors = Array.isArray(conditions) ? conditions : conditions ? [conditions] : [];
     const sensType = Object.fromEntries(sensors.map(s => [s.sensor_type, !!s.sensor_state]));
@@ -76,3 +76,5 @@ export function nextDockState(currentState, previousState, conditions, Controlle
         return "Exception"
     }
 }
+
+module.exports = {nextDockState};
