@@ -198,8 +198,8 @@ module.exports = async function (fastify, opts) {
 
         const { data, error } = await fastify.supabase
             .from("sensors")
-            .select("*")
-            .eq("id", id)
+            .select("id")
+            .eq("dock_bay_id", id)
             .single();
         if (error) {
             reply.code(404);

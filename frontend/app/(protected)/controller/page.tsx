@@ -1,10 +1,29 @@
-"use client"
-import { useMemo, useState } from "react";
+"use client";
+import { useEffect, useState, useMemo } from "react";
 import styles from "./controllerpage.module.css";
+import { fetchDocks } from "@/lib/api";
+import { DockBay } from "@/types/interfaces";
 import { fetchSensorsByDockID } from "@/lib/api";
 
 export default function Controller() {
-  const docks = useMemo(
+    // Hold dock data here
+    const [docks, setDocks] = useState<DockBay[]>([]);
+    const [selectedDockID, setselectedDockID] = useState<string | null>(null);
+
+    // fetch dock data to use id's for selection
+    useEffect(() => {
+        const initializeData = async () => {
+            const initDocks = await fetchDocks();
+            setDocks(initDocks);
+        };
+        initializeData();
+    }, []);
+
+    console.log(docks);
+
+
+
+  const dockss = useMemo(
     () => [
       { label: "Dock 1", uuid: "22d3242a-c2cf-459c-95ca-8bec86657fdd" },
       { label: "Dock 2", uuid: "9f121f79-fe3c-42f7-ba6c-ac64dc6c1228" },
@@ -23,7 +42,7 @@ export default function Controller() {
 
   const [selectedUuid, setSelectedUuid] = useState<string>("");
 
-  const selectedDock = docks.find((d) => d.uuid === selectedUuid) ?? null;
+  const selectedDock = dockss.find((d) => d.uuid === selectedUuid) ?? null;
 
   return (
     <div className={`stack center`}>
@@ -43,7 +62,7 @@ export default function Controller() {
                     Select a dock…
                 </option>
 
-                {docks.map((d) => (
+                {dockss.map((d) => (
                     <option key={d.uuid} value={d.uuid}>
                     {d.label}
                 </option>
