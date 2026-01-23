@@ -5,7 +5,7 @@
 import { AvgTurnoverResponse } from "@/types/interfaces";
 
 export async function fetchDocks() {
-  const res = await fetch("https://dockview.onrender.com/api/docks");
+  const res = await fetch("https://dockview.onrender.com/docks");
   if(!res.ok){
     throw new Error("Failed to fetch docks");
   }
@@ -13,7 +13,7 @@ export async function fetchDocks() {
 }
 
 export async function fetchDockByID(id:string) {
-  const res = await fetch(`https://dockview.onrender.com/api/dock/${id}`);
+  const res = await fetch(`https://dockview.onrender.com/dock/${id}`);
   if(!res.ok){
     throw new Error(`Failed to fetch dock ${id}`);
   }
@@ -21,7 +21,7 @@ export async function fetchDockByID(id:string) {
 }
 
 export async function fetchLoadsCompleted() {
-  const res = await fetch("https://dockview.onrender.com/api/stats/loadsCompleted");
+  const res = await fetch("https://dockview.onrender.com/stats/loadsCompleted");
   if(!res.ok){
     throw new Error("Failed to fetch loads completed");
   }
@@ -29,7 +29,7 @@ export async function fetchLoadsCompleted() {
 }
 
 export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResponse> {
-  const res = await fetch(`https://dockview.onrender.com/api/stats/turnover/${days}`);
+  const res = await fetch(`https://dockview.onrender.com/stats/turnover/${days}`);
   if(!res.ok){
     throw new Error('Failed to fetch avg turnover');
   } 
@@ -38,7 +38,7 @@ export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResp
 
 //get sensors by dock_id
 export async function fetchSensorsByDockID(id:string) {
-  const res = await fetch(`http://dockview.onrender.com/sensors/${id}`, {
+  const res = await fetch(`https://dockview.onrender.com/sensors/${id}`, {
     method: "GET",
   });
      

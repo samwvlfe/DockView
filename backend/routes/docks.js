@@ -1,17 +1,17 @@
 module.exports = async function (fastify, opts) {
 
     // GET all Dock Bays 
-    fastify.get("/api/docks", async () => {
+    fastify.get("/docks", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bays")
-            .select("id, friendly_id, name, status, status_changed_at");
-
+            .select("id, friendly_id, name, status, status_changed_at")
+            .order("name", { ascending: true });
         if (error) return { error: "Failed to fetch docks" };
         return data;
     });
 
     // GET all info for info card
-    fastify.get("/api/dock/:id", async (request, reply) => {
+    fastify.get("/dock/:id", async (request, reply) => {
         const { id } = request.params;
         //get date 7 days ago
         const sevenDays = new Date();
@@ -47,7 +47,7 @@ module.exports = async function (fastify, opts) {
     });
 
     // GET Dock Bay loads completed today
-    fastify.get("/api/stats/loadsCompleted", async () => {
+    fastify.get("/stats/loadsCompleted", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bay_history")
             .select("*")
@@ -61,7 +61,7 @@ module.exports = async function (fastify, opts) {
     });
 
     // Call get_turnover_stats() stored procedure
-    fastify.get("/api/stats/turnover/:days", async (request, reply) => {
+    fastify.get("/stats/turnover/:days", async (request, reply) => {
     try {
         const days = request.params.days;
         const daysNum = Number(days);

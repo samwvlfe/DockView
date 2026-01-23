@@ -52,7 +52,6 @@ export default function DashboardPage() {
 
   return (
         <main>
-            <Header />
             <div className="content row gap10">  
             <DockGridCont 
                 docks={docks}
