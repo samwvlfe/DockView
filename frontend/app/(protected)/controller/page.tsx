@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import styles from "./controllerpage.module.css";
 import { fetchDocks, fetchSensorsByDockID } from "@/lib/api";
 import { DockBay, Sensor } from "@/types/interfaces";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Controller() {
     // Dock data
@@ -17,6 +18,7 @@ export default function Controller() {
         (async () => {
             const initDocks = await fetchDocks();
             setDocks(initDocks);
+            console.log(initDocks);
         })();
     }, []);
 
@@ -58,6 +60,7 @@ export default function Controller() {
     // get selected dock to access state
     const selectedDock = docks.find(d => d.id === selectedUuid) ?? null;
     const selectedState = selectedDock?.fsm_state ?? null;
+    console.log(selectedState);
 
   return (
     <div className={`stack center gap20`}>
