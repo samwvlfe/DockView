@@ -202,8 +202,8 @@ module.exports = async function (fastify, opts) {
             .eq("dock_bay_id", id)
             .single();
         if (error) {
-            reply.code(404);
-            return {error: `Failed to fetch sensors for dock ${id}`}
+            console.errer(error);
+            return reply.code(500).send({error: `Failed to fetch sensors for dock ${id}`});
         }
 
         return data;

@@ -1,4 +1,5 @@
-// Fetch database data
+// FUNCTIONS that call the routes defined in backend/routes/*
+
 //eventually make baseURL an .env variable
 
 import { AvgTurnoverResponse } from "@/types/interfaces";
