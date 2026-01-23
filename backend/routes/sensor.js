@@ -193,19 +193,19 @@ module.exports = async function (fastify, opts) {
     });
 
     // Get all 3 sensors for dock by id
-    fastify.get("/sensors/:id", async (request, reply) => {
-        const { id } = request.params;
+    fastify.get("/sensors/:dock_bay_id", async (request, reply) => {
+        const { dock_bay_id } = request.params;
 
         const { data, error } = await fastify.supabase
-            .from("sensors")
-            .select("id")
-            .eq("dock_bay_id", id)
-            .single();
+        .from("sensors")
+        .select("*")
+        .eq("dock_bay_id", dock_bay_id);
+
         if (error) {
-            console.errer(error);
-            return reply.code(500).send({error: `Failed to fetch sensors for dock ${id}`});
+            console.log(error);
+            return reply.code(500).send({ error: "Failed to fetch sensors" });
         }
 
-        return data;
+        return reply.send(data);
     });
 };
