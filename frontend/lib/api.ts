@@ -1,4 +1,5 @@
 // Fetch database data
+//eventually make baseURL an .env variable
 
 import { AvgTurnoverResponse } from "@/types/interfaces";
 
@@ -31,5 +32,14 @@ export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResp
   if(!res.ok){
     throw new Error('Failed to fetch avg turnover');
   } 
+  return res.json();
+}
+
+//get sensors by dock_id
+export async function fetchSensorsByDockID(id:string) {
+  const res = await fetch(`http://dockview.onrender.com/sensors/${id}`);
+  if(!res.ok){
+    throw new Error(`Failed to fetch sensors for dock ${id}`);
+  }
   return res.json();
 }

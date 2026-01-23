@@ -1,6 +1,7 @@
 "use client"
 import { useMemo, useState } from "react";
 import styles from "./controllerpage.module.css";
+import { fetchSensorsByDockID } from "@/lib/api";
 
 export default function Controller() {
   const docks = useMemo(

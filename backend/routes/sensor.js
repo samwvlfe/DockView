@@ -1,8 +1,8 @@
-// POST Sensor Data
 const broadcaster = require("../lib/broadcaster");
 const { secondsToHuman } = require("../lib/helpers/time");
 
 module.exports = async function (fastify, opts) {
+    //POST sensor data
     fastify.post("/sensor", async (request, reply) => {
         try {
             const { sensor_id, dock_bay_id, event_type, payload } = request.body;
@@ -190,5 +190,22 @@ module.exports = async function (fastify, opts) {
             console.error("SERVER ERROR:", err);
             reply.code(500).send({ error: "Server error" });
         }
+    });
+
+    // Get all 3 sensors for dock by id
+    fastify.get("/sensors/:id", async (request, reply) => {
+        const { id } = request.params;
+
+        const { data, error } = await fastify.supabase
+            .from("sensors")
+            .select("*")
+            .eq("id", id)
+            .single();
+        if (error) {
+            reply.code(404);
+            return {error: `Failed to fetch sensors for dock ${id}`}
+        }
+
+        return data;
     });
 };
