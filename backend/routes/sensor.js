@@ -188,7 +188,7 @@ module.exports = async function (fastify, opts) {
 
         } catch (err) {
             console.error("SERVER ERROR:", err);
-            reply.code(500).send({ error: "Server error" });
+            reply.code(500).send({ error: "Error posting status change" });
         }
     });
 

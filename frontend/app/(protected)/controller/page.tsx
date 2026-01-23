@@ -1,24 +1,24 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import styles from "./controllerpage.module.css";
-import { fetchDocks, fetchSensorsByDockID } from "@/lib/api";
+import { fetchDocks, fetchSensorsByDockID, sendControllerAction } from "@/lib/api";
 import { DockBay, Sensor } from "@/types/interfaces";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Controller() {
     // Dock data
     const [docks, setDocks] = useState<DockBay[]>([]);
     const [selectedUuid, setSelectedUuid] = useState<string>("");
-    //Sensor data 
+    // Sensor data 
     const [sensors, setSensors] = useState<Sensor[]>([]);
     const [sensorsLoading, setSensorsLoading] = useState(false);
+    // State
+    const [currState, setCurrState] = useState<string | null>(null);
 
     // fetch docks
     useEffect(() => {
         (async () => {
             const initDocks = await fetchDocks();
             setDocks(initDocks);
-            console.log(initDocks);
         })();
     }, []);
 
@@ -53,94 +53,129 @@ export default function Controller() {
     const sensorTypes = useMemo(() => {
         return new Set(sensors.map((s) => s.sensor_type));
     }, [sensors]);
+    
     const hasDoor = sensorTypes.has("DOOR");
     const hasLeveler = sensorTypes.has("LEVELER");
     const hasRestraint = sensorTypes.has("RESTRAINT") || sensorTypes.has("RESTRIANT");
+    //access sensor ID to hook into button
+    const doorSensorId = sensors.find(s => s.sensor_type === "DOOR")?.id ?? null;
+    const levelerSensorId = sensors.find(s => s.sensor_type === "LEVELER")?.id ?? null;
+    const restraintSensorId = sensors.find(s => s.sensor_type === "RESTRAINT")?.id ?? null;
+
+    async function handleAction(action: string, sensorId: string | null) {
+        if (!selectedUuid) return;
+        if (!sensorId) return;
+
+        try {
+            const result = await sendControllerAction(selectedUuid, sensorId, action);
+            console.log("action result:", result);
+        } catch (e) {
+            console.error("action failed:", e);
+        }
+    }
 
     // get selected dock to access state
     const selectedDock = docks.find(d => d.id === selectedUuid) ?? null;
     const selectedState = selectedDock?.fsm_state ?? null;
-    console.log(selectedState);
+    useEffect(() => {
+        setCurrState(selectedState);
+    }, [selectedState]);
 
-  return (
-    <div className={`stack center gap20`}>
-        <h1>Controller Test</h1>
+    return (
+        <div className={`stack center gap20`}>
+            <h1>Controller Test</h1>
 
-        <div className={`${styles.selectCont} stack center`}>
+            <div className={`${styles.selectCont} stack center`}>
 
-            <label htmlFor="dock">Select dock</label>
+                <label htmlFor="dock">Select dock</label>
 
-            <select
-                id="dock"
-                name="dock"
-                value={selectedUuid}
-                onChange={(e) => setSelectedUuid(e.target.value)}
-                >
-                <option value="" disabled>
-                    Select a dock…
-                </option>
+                <select
+                    id="dock"
+                    name="dock"
+                    value={selectedUuid}
+                    onChange={(e) => setSelectedUuid(e.target.value)}
+                    >
+                    <option value="" disabled>
+                        Select a dock…
+                    </option>
 
-                {docks.map((d) => (
-                    <option key={d.id} value={d.id}>
-                    {d.name}
-                </option>
-                ))}
-            </select>
+                    {docks.map((d) => (
+                        <option key={d.id} value={d.id}>
+                        {d.name}
+                    </option>
+                    ))}
+                </select>
 
-        </div>
-
-        <div className="row center gap20">
-
-            <div className={`${styles.buttonCont} stack gap20`}>
-                <div className={`${styles.buttonRow} row center gap10`}>
-                    <div className={styles.buttonName}>Vehicle Restraint:</div>
-                    <button
-                        type="button"
-                        className={`${hasRestraint ? styles.open : styles.buttonNotReady}`}
-                        >
-                        ARM
-                    </button>
-                    <button
-                        type="button"
-                        className={`${hasRestraint ? styles.close : styles.buttonNotReady}`}
-                        >
-                        DISARM
-                    </button>
-                </div>
-                <div className={`${styles.buttonRow} row center gap10`}>
-                    <div className={styles.buttonName}>Dock Bay Door:</div>
-                    <button
-                        type="button"
-                        className={`${hasDoor ? styles.open : styles.buttonNotReady}`}
-                        >
-                        OPEN
-                    </button>
-                    <button
-                        type="button"
-                        className={`${hasDoor ? styles.close : styles.buttonNotReady}`}
-                        >
-                        CLOSE
-                    </button>
-                </div>
-                <div className={`${styles.buttonRow} row center gap10`}>
-                    <div className={styles.buttonName}>Dock Leveler:</div>
-                    <button
-                        type="button"
-                        className={`${hasLeveler ? styles.open : styles.buttonNotReady}`}
-                        >
-                        DEPLOY
-                    </button>
-                    <button
-                        type="button"
-                        className={`${hasLeveler ? styles.close : styles.buttonNotReady}`}
-                        >
-                        RESET
-                    </button>
-                </div>
             </div>
 
-            <div><h3>CURRENT STATE: {selectedState ? selectedState : "Loading"}</h3></div>
+            <div className="row center gap20">
+
+                <div className={`${styles.buttonCont} stack gap20`}>
+                    <div className={`${styles.buttonRow} row center gap10`}>
+                        <div className={styles.buttonName}>Vehicle Restraint:</div>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasRestraint ? styles.open : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Vehicle Restraint Engaged", restraintSensorId)}
+                            >
+                            ARM
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasRestraint ? styles.close : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Vehicle Restraint Disengaged", restraintSensorId)}
+                            >
+                            DISARM
+                        </button>
+                    </div>
+                    <div className={`${styles.buttonRow} row center gap10`}>
+                        <div className={styles.buttonName}>Dock Bay Door:</div>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasDoor ? styles.open : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Door Opened", doorSensorId)}
+                            >
+                            OPEN
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasDoor ? styles.close : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Door Closed", doorSensorId)}
+                            >
+                            CLOSE
+                        </button>
+                    </div>
+                    <div className={`${styles.buttonRow} row center gap10`}>
+                        <div className={styles.buttonName}>Dock Leveler:</div>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasLeveler ? styles.open : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Dock Leveler Deployed", levelerSensorId)}
+                            >
+                            DEPLOY
+                        </button>
+                        <button
+                            type="button"
+                            disabled={!selectedUuid || !restraintSensorId}
+                            className={`${hasLeveler ? styles.close : styles.buttonNotReady}`}
+                            onClick={() => handleAction("Dock Leveler Reset", levelerSensorId)}
+                            >
+                            RESET
+                        </button>
+                    </div>
+                </div>
+
+                {currState !== null && (
+                    <div>
+                        <h3>CURRENT STATE: {currState}</h3>
+                    </div>
+                )}
+            </div>
         </div>
-    </div>
-  );
+    );
 }

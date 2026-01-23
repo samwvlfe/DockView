@@ -1,11 +1,13 @@
 // FUNCTIONS that call the routes defined in backend/routes/*
-
-//eventually make baseURL an .env variable
-
 import { AvgTurnoverResponse } from "@/types/interfaces";
 
+//eventually make baseURL an .env variable
+const baseURL = "https://dockview.onrender.com";
+
 export async function fetchDocks() {
-  const res = await fetch("https://dockview.onrender.com/docks");
+  const res = await fetch(`${baseURL}/docks`, {
+    method: "GET",
+  });
   if(!res.ok){
     throw new Error("Failed to fetch docks");
   }
@@ -13,7 +15,9 @@ export async function fetchDocks() {
 }
 
 export async function fetchDockByID(id:string) {
-  const res = await fetch(`https://dockview.onrender.com/dock/${id}`);
+  const res = await fetch(`${baseURL}/dock/${id}`, {
+    method: "GET",
+  });
   if(!res.ok){
     throw new Error(`Failed to fetch dock ${id}`);
   }
@@ -21,7 +25,9 @@ export async function fetchDockByID(id:string) {
 }
 
 export async function fetchLoadsCompleted() {
-  const res = await fetch("https://dockview.onrender.com/stats/loadsCompleted");
+  const res = await fetch(`${baseURL}/stats/loadsCompleted`, {
+    method: "GET",
+  });
   if(!res.ok){
     throw new Error("Failed to fetch loads completed");
   }
@@ -29,7 +35,9 @@ export async function fetchLoadsCompleted() {
 }
 
 export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResponse> {
-  const res = await fetch(`https://dockview.onrender.com/stats/turnover/${days}`);
+  const res = await fetch(`${baseURL}/stats/turnover/${days}`, {
+    method: "GET",
+  });
   if(!res.ok){
     throw new Error('Failed to fetch avg turnover');
   } 
@@ -38,12 +46,27 @@ export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResp
 
 //get sensors by dock_id
 export async function fetchSensorsByDockID(id:string) {
-  const res = await fetch(`https://dockview.onrender.com/sensors/${id}`, {
+  const res = await fetch(`${baseURL}/sensors/${id}`, {
     method: "GET",
   });
      
   if(!res.ok){
     throw new Error(`Failed to fetch sensors for dock ${id}`);
   }
+  return res.json();
+}
+
+// POST controller actions
+export async function sendControllerAction(dockId: string, sensorId: string, action: string) {
+  const res = await fetch(`${baseURL}/controller/action/`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ dockId, sensorId, action}),
+  });
+
+  if(!res.ok){
+    const text = await res.text().catch(() => "");
+    throw new Error(`Controller Action failed: ${res.status} ${text}`);
+  } 
   return res.json();
 }

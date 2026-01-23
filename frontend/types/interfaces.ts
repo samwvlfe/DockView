@@ -44,4 +44,5 @@ export interface Sensor {
   name: string;
   created_at: string;
   friendly_id: number;
+  sensor_state: boolean;
 }
