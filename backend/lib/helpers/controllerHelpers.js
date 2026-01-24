@@ -1,3 +1,29 @@
+function boolFlipper(nextState, conditions){
+    // map of sensors to flip on each condition
+    const flipMap = {
+        "Restrained_DoorClosed": ["RESTRAINT"],
+        "DoorOpen_LevelerClosed": ["DOOR"],
+        "LevelerEngaged_ReadyToLoad": ["LEVELER"],
+        "LoadingComplete_DoorOpen": ["LEVELER"],
+        "DoorClosed_Restrained": ["DOOR"],
+        "Cycle_Complete": ["RESTRAINT"]
+    };
+
+    const sensorsToFlip = flipMap[nextState] || [];
+
+    const updatedConditions = conditions.map(sensor => {
+        if (sensorsToFlip.includes(sensor.sensor_type)) {
+            return {
+                ...sensor,
+                sensor_state: !sensor.sensor_state  // Flip the boolean
+            };
+        }
+        return sensor;
+    });
+
+    return updatedConditions;
+}
+
 function stateMachine(currentState, previousState, conditions, ControllerAction) {
     // normalize to an array so your logic is consistent
     const sensors = Array.isArray(conditions) ? conditions : conditions ? [conditions] : [];
@@ -77,4 +103,4 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     }
 }
 
-module.exports = {stateMachine};
+module.exports = {stateMachine, boolFlipper};

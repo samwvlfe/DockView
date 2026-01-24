@@ -1,5 +1,5 @@
 //Controller Actions
-const { stateMachine } = require("../lib/helpers/controllerHelpers");
+const { stateMachine, boolFlipper } = require("../lib/helpers/controllerHelpers");
 
 module.exports = async function (fastify, opts) {
     // any button pressed
@@ -42,12 +42,32 @@ module.exports = async function (fastify, opts) {
             // call stateMachine function
             const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
 
-            //############################
-            // create function that takes in the next state and gets the values the sensors should have
-            // then update the sensors table to reflect those values
-            //############################
+            // Get updated sensor states based on next state
+            const updatedConditions = boolFlipper(nextState, conditions);
 
-            // insert data into cycle or create one
+            // Update sensors value in public.sensors
+            const sensorUpdatePromises = updatedConditions.map(async (sensor) => {
+                const { data, error } = await fastify.supabase
+                    .from("sensors")
+                    .update({
+                        sensor_state: sensor.sensor_state
+                    })
+                    .eq("id", sensor.id)
+                    .select("*")
+                    .single();
+
+                if (error) {
+                    console.error(`Failed to update sensor ${sensor.id}:`, error);
+                    throw error;
+                }
+                return data;
+            });
+            // Wait for all sensor updates to complete
+            const updatedSensors = await Promise.all(sensorUpdatePromises);
+
+
+            // insert data into cycle or create one in public.dock_cycles
+            //FIX!!!! right now its just insert, needs to be update if one already made for current dock bay load
             const { data: insertCycle, error: cycleError} = await fastify.supabase
                 .from("dock_cycles")
                 .insert({
@@ -55,7 +75,7 @@ module.exports = async function (fastify, opts) {
                     terminal_state: nextState,
                     terminal_reason: action,
                     state_started_at: NOW,
-                    meta: conditions,
+                    meta: updatedConditions,
                     ended_at: nextState === "Cycle_Complete" ? NOW : null
                 })
                 .select("*")
@@ -65,30 +85,9 @@ module.exports = async function (fastify, opts) {
                 console.error("Insert error: ", cycleError);
                 return reply.code(500).send({ error: "Failed to insert cycle data"});
             } 
-                
-            // update dock_bay info
-            const { data: insertDockInfo, error: dockErr} = await fastify.supabase
-                .from("dock_bays")
-                .update({
-                    fsm_state: nextState,
-                    last_valid_fsm_state: dock.fsm_state,
-                    // exception_code: nextState === "Exception" ? "EXCEPTION1" : null,
-                    // exception_payload: null,
-                    conditions: conditions,
-                    active_cycle_id: dock.active_cycle_id,
-                    fsm_state_entered_at: NOW
-                })
-                .eq("id", dockId)
-                .select("*")
-                .single();
 
-            if (dockErr) {
-                console.error("Update error: ", dockErr);
-                return reply.code(500).send({ error: "Failed to update dock"});
-            } 
-
-            // Find the specific sensor from conditions array for insert
-            const targetSensor = conditions.find(s => s.id === sensorId);
+            // Find the specific sensor from updated conditions
+            const targetSensor = updatedConditions.find(s => s.id === sensorId);
             if (!targetSensor) {
                 return reply.code(404).send({ error: "Sensor not found in conditions" });
             }
@@ -114,7 +113,38 @@ module.exports = async function (fastify, opts) {
                 return reply.code(500).send({ error: "Failed to insert sensor event data"});
             } 
                 
-            return reply.send({ insertedRow, debug: debugInfo });
+            // update info in public.dock_bays
+            // add exceptions!
+            const { data: insertDockInfo, error: dockErr} = await fastify.supabase
+                .from("dock_bays")
+                .update({
+                    fsm_state: nextState,
+                    last_valid_fsm_state: dock.fsm_state,
+                    // exception_code: nextState === "Exception" ? "EXCEPTION1" : null,
+                    // exception_payload: null,
+                    conditions: updatedConditions,
+                    active_cycle_id: dock.active_cycle_id,
+                    fsm_state_entered_at: NOW
+                })
+                .eq("id", dockId)
+                .select("*")
+                .single();
+
+            if (dockErr) {
+                console.error("Update error: ", dockErr);
+                return reply.code(500).send({ error: "Failed to update dock"});
+            } 
+                
+            // POST return body
+            return reply.send({ 
+                success: true,
+                nextState,
+                updatedSensors,
+                insertedRow,
+                insertCycle,
+                insertDockInfo,
+                insertEvent
+            });
 
         } catch (err) {
             return reply.code(500).send({ error: "Error with state controller" });
