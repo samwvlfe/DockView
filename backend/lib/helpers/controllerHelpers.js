@@ -77,4 +77,4 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     }
 }
 
-module.exports = {nextDockState};
+module.exports = {stateMachine};

@@ -1,5 +1,5 @@
 //Controller Actions
-const { nextDockState } = require("../lib/helpers/controllerHelpers");
+const { stateMachine } = require("../lib/helpers/controllerHelpers");
 
 module.exports = async function (fastify, opts) {
     // any button pressed
