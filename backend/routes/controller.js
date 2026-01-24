@@ -1,5 +1,5 @@
 //Controller Actions
-const { stateMachine, boolFlipper } = require("../lib/helpers/controllerHelpers");
+const { stateMachine } = require("../lib/helpers/controllerHelpers");
 
 module.exports = async function (fastify, opts) {
     // any button pressed
@@ -39,32 +39,37 @@ module.exports = async function (fastify, opts) {
                 return reply.code(404).send({ error: "Sensors not found" });
             }
 
+            // Find the specific sensor that triggered this action
+            const targetSensor = conditions.find(s => s.id === sensorId);
+            if (!targetSensor) {
+                return reply.code(404).send({ error: "Sensor not found" });
+            }
+
+            //flip state of the sensor that caused POST and update in DB
+            const flippedSensorState = !targetSensor.sensor_state;
+            const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
+                .from("sensors")
+                .update({
+                    sensor_state: flippedSensorState,
+                    updated_state_at: NOW
+                })
+                .eq("id", sensorId)
+                .select("*")
+                .single();
+            if (sensorUpdateErr) {
+                console.error(`Failed to update sensor ${sensorId}:`, sensorUpdateErr);
+                return reply.code(500).send({ error: "Failed to update sensor"});
+            }
+
+            // Create updated conditions array with the flipped sensor
+            const updatedConditions = conditions.map(sensor => 
+                sensor.id === sensorId 
+                    ? { ...sensor, sensor_state: flippedSensorState }
+                    : sensor
+            );
+
             // call stateMachine function
-            const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
-
-            // Get updated sensor states based on next state
-            const updatedConditions = boolFlipper(nextState, conditions);
-
-            // Update sensors value in public.sensors
-            const sensorUpdatePromises = updatedConditions.map(async (sensor) => {
-                const { data, error } = await fastify.supabase
-                    .from("sensors")
-                    .update({
-                        sensor_state: sensor.sensor_state
-                    })
-                    .eq("id", sensor.id)
-                    .select("*")
-                    .single();
-
-                if (error) {
-                    console.error(`Failed to update sensor ${sensor.id}:`, error);
-                    throw error;
-                }
-                return data;
-            });
-            // Wait for all sensor updates to complete
-            const updatedSensors = await Promise.all(sensorUpdatePromises);
-
+            const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, updatedConditions, action);
 
             // insert data into cycle or create one in public.dock_cycles
             //FIX!!!! right now its just insert, needs to be update if one already made for current dock bay load
@@ -86,12 +91,6 @@ module.exports = async function (fastify, opts) {
                 return reply.code(500).send({ error: "Failed to insert cycle data"});
             } 
 
-            // Find the specific sensor from updated conditions
-            const targetSensor = updatedConditions.find(s => s.id === sensorId);
-            if (!targetSensor) {
-                return reply.code(404).send({ error: "Sensor not found in conditions" });
-            }
-
             // insert data into sensor_events
             const { data: insertEvent, error: eventError} = await fastify.supabase
                 .from("sensor_events")
@@ -99,7 +98,7 @@ module.exports = async function (fastify, opts) {
                     sensor_id: sensorId, 
                     dock_bay_id: dockId,
                     payload: {
-                        sensor_state: targetSensor.sensor_state,
+                        sensor_state: flippedSensorState,
                         sensor_type: targetSensor.sensor_type
                     },
                     cycle_id: dock.active_cycle_id,
