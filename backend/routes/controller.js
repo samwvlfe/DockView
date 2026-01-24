@@ -62,11 +62,14 @@ module.exports = async function (fastify, opts) {
                     terminal_reason: action,
                     state_started_at: NOW,
                     meta: conditions,
-                    created_at: nextState === "Cycle_Complete" ? NOW : null
+                    ended_at: nextState === "Cycle_Complete" ? NOW : null
                 })
+                .select("*")
+                .single()
+
             if (cycleError) {
                 console.error("Insert error: ", cycleError);
-                return reply.code(500).send({ error: "Failed to inser cycle data"});
+                return reply.code(500).send({ error: "Failed to insert cycle data"});
             }
                 //Start a cycle! (if curr = bay_available and starting cycle)
                 //   - dock_bay_id, state_started_at = NOW, terminal_STATE, reason(create export function map), 
