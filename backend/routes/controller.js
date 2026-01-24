@@ -1,5 +1,5 @@
 //Controller Actions
-const { nextDockState } = require("../lib/helpers/stateMachine");
+const { nextDockState } = require("../lib/helpers/controllerHelpers");
 
 module.exports = async function (fastify, opts) {
     // any button pressed
@@ -40,38 +40,7 @@ module.exports = async function (fastify, opts) {
             }
 
             // call stateMachine function
-            const nextState = nextDockState(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
-
-            // Create debug info
-            const debugInfo = {
-                input: {
-                    dockId,
-                    sensorId,
-                    action
-                },
-                dock: {
-                    currentState: dock.fsm_state,
-                    previousState: dock.last_valid_fsm_state
-                },
-                conditions: conditions,
-                sensType: Object.fromEntries(
-                    (Array.isArray(conditions) ? conditions : [conditions])
-                    .map(s => [s.sensor_type, !!s.sensor_state])
-                ),
-                result: {
-                    nextState: nextState,
-                    nextStateType: typeof nextState,
-                    isUndefined: nextState === undefined
-                }
-            };
-
-            // Check if nextState is valid
-            if (!nextState || nextState === undefined) {
-                return reply.code(400).send({ 
-                    error: "State machine returned invalid state",
-                    debug: debugInfo
-                });
-            }
+            const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
 
             // insert new state into test table
             const { data: insertedRow, error: insertError } = await fastify.supabase
@@ -79,27 +48,42 @@ module.exports = async function (fastify, opts) {
                 .insert({ next_state: nextState })
                 .select("*")
                 .single();
-
             if (insertError) {
-                return reply.code(500).send({ 
-                    error: "Failed to insert row",
-                    details: insertError.message,
-                    debug: debugInfo
-                });
+                console.error("Insert error:", insertError);
+                return reply.code(500).send({ error: "Failed to insert row" });
             }
 
-            return reply.send({ 
-                success: true,
-                insertedRow,
-                debug: debugInfo 
-            });
+            // insert data into cycle or create one
+            const { data: insertCycle, error: cycleError} = await fastify.supabase
+                .from("sensor_events")
+                .insert({
+                    dock_bay_id: dockId,
+                    terminal_state: nextState,
+                    terminal_reason: action,
+                    state_started_at: NOW,
+                    meta: conditions,
+                    created_at: nextState === "Cycle_Complete" ? NOW : null
+                })
+            if (cycleError) {
+                console.error("Insert error: ", cycleError);
+                return reply.code(500).send({ error: "Failed to inser cycle data"});
+            }
+                //Start a cycle! (if curr = bay_available and starting cycle)
+                //   - dock_bay_id, state_started_at = NOW, terminal_STATE, reason(create export function map), 
+                
+                // add new state to dockbay 'fsm_state'
+                // add previous to 'last_valid_fsm_state'
+                // insert the three sensor codes to 'conditions'
+                // add active cycle ID to dock_bay and Sensor_events
+                // fsm_state_entered = NOW()
+                
+            
+                
+                
+            return reply.send({ insertedRow, debug: debugInfo });
 
         } catch (err) {
-            return reply.code(500).send({ 
-                error: "Error with state controller",
-                message: err.message,
-                stack: err.stack 
-            });
+            return reply.code(500).send({ error: "Error with state controller" });
         }
     });
 

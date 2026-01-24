@@ -1,4 +1,4 @@
-function nextDockState(currentState, previousState, conditions, ControllerAction) {
+function stateMachine(currentState, previousState, conditions, ControllerAction) {
     // normalize to an array so your logic is consistent
     const sensors = Array.isArray(conditions) ? conditions : conditions ? [conditions] : [];
     const sensType = Object.fromEntries(sensors.map(s => [s.sensor_type, !!s.sensor_state]));
