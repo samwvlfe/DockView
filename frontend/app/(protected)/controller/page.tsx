@@ -68,7 +68,6 @@ export default function Controller() {
 
         try {
             const result = await sendControllerAction(selectedUuid, sensorId, action);
-            console.log("action result:", result);
         } catch (e) {
             console.error("action failed:", e);
         }
