@@ -12,10 +12,10 @@ module.exports = async function (fastify, opts) {
 
             const NOW = new Date().toISOString();
 
-            // Get add data needed for state machine
+            // Get dock data
             const { data: dock, error: dockError } = await fastify.supabase
                 .from("dock_bays")
-                .select("fsm_state, last_valid_fsm_state")
+                .select("fsm_state, last_valid_fsm_state, active_cycle_id")
                 .eq("id", dockId)
                 .single();
             
@@ -29,8 +29,8 @@ module.exports = async function (fastify, opts) {
             // get sensor conditions
             const { data: conditions, error: sensorsError } = await fastify.supabase
                 .from("sensors")
-                .select("sensor_type, sensor_state")
-                .eq("dock_bay_id", dockId)
+                .select("id, sensor_type, sensor_state")
+                .eq("dock_bay_id", dockId);
             
             if (sensorsError) {
                 return reply.code(500).send({ error: "Database Error (sensors)", sensorsError });
@@ -55,7 +55,7 @@ module.exports = async function (fastify, opts) {
 
             // insert data into cycle or create one
             const { data: insertCycle, error: cycleError} = await fastify.supabase
-                .from("sensor_events")
+                .from("dock_cycles")
                 .insert({
                     dock_bay_id: dockId,
                     terminal_state: nextState,
@@ -65,23 +65,60 @@ module.exports = async function (fastify, opts) {
                     ended_at: nextState === "Cycle_Complete" ? NOW : null
                 })
                 .select("*")
-                .single()
+                .single();
 
             if (cycleError) {
                 console.error("Insert error: ", cycleError);
                 return reply.code(500).send({ error: "Failed to insert cycle data"});
+            } 
+                
+            // update dock_bay info
+            const { data: insertDockInfo, error: dockErr} = await fastify.supabase
+                .from("dock_bays")
+                .update({
+                    fsm_state: nextState,
+                    last_valid_fsm_state: dock.fsm_state,
+                    exception_code: nextState === "Exception" ? "EXCEPTION1" : null,
+                    exception_payload: null,
+                    conditions: conditions,
+                    active_cycle_id: dock.active_cycle_id,
+                    fsm_state_entered_at: NOW
+                })
+                .eq("dock_bay_id", dockId)
+                .select("*")
+                .single();
+
+            if (dockErr) {
+                console.error("Update error: ", dockErr);
+                return reply.code(500).send({ error: "Failed to update dock"});
+            } 
+
+            // Find the specific sensor from conditions array for insert
+            const targetSensor = conditions.find(s => s.sensor_id === sensorId);
+            if (!targetSensor) {
+                return reply.code(404).send({ error: "Sensor not found in conditions" });
             }
-                //Start a cycle! (if curr = bay_available and starting cycle)
-                //   - dock_bay_id, state_started_at = NOW, terminal_STATE, reason(create export function map), 
-                
-                // add new state to dockbay 'fsm_state'
-                // add previous to 'last_valid_fsm_state'
-                // insert the three sensor codes to 'conditions'
-                // add active cycle ID to dock_bay and Sensor_events
-                // fsm_state_entered = NOW()
-                
-            
-                
+
+            // insert data into sensor_events
+            const { data: insertEvent, error: eventError} = await fastify.supabase
+                .from("sensor_events")
+                .insert({
+                    sensor_id: sensorId, 
+                    dock_bay_id: dockId,
+                    payload: {
+                        sensor_state: targetSensor.sensor_state,
+                        sensor_type: targetSensor.sensor_type
+                    },
+                    cycle_id: dock.active_cycle_id,
+                    action: action
+                })
+                .select("*")
+                .single();
+
+            if (eventError) {
+                console.error("Insert error: ", eventError);
+                return reply.code(500).send({ error: "Failed to insert sensor event data"});
+            } 
                 
             return reply.send({ insertedRow, debug: debugInfo });
 

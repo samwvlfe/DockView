@@ -5,11 +5,11 @@ module.exports = async function (fastify, opts) {
     //POST sensor data
     fastify.post("/sensor", async (request, reply) => {
         try {
-            const { sensor_id, dock_bay_id, event_type, payload } = request.body;
+            const { sensor_id, dock_bay_id, action, payload } = request.body;
             const NOW = new Date().toISOString();
 
             // Validate input
-            if (!sensor_id || !dock_bay_id || !event_type) {
+            if (!sensor_id || !dock_bay_id || !action) {
                 return reply.code(400).send({ error: "Missing required fields" });
             }
 
@@ -46,7 +46,7 @@ module.exports = async function (fastify, opts) {
                 .insert({
                     sensor_id,
                     dock_bay_id,
-                    event_type,
+                    action,
                     payload
                 })
                 .select()
@@ -60,7 +60,7 @@ module.exports = async function (fastify, opts) {
             let actionType = null;
 
             
-            if (event_type === "manual change") {
+            if (action === "manual change") {
                 newStatus = payload.open ? "occupied" : "idle";
 
                 // Update status in dock_bays table
@@ -84,7 +84,7 @@ module.exports = async function (fastify, opts) {
                         dock_bay_id,
                         old_status: oldStatus,
                         new_status: newStatus,
-                        event_type,
+                        action,
                         status_changed_at: NOW
                     }
                 });
@@ -147,7 +147,7 @@ module.exports = async function (fastify, opts) {
                         dock_bay_id,
                         old_status: oldStatus,
                         new_status: newStatus,
-                        reason: event_type,
+                        reason: action,
                         event_id: event.id, 
                         turnover_time: turnoverTime
                     });
@@ -168,7 +168,7 @@ module.exports = async function (fastify, opts) {
                     payload: {
                     oldStatus,
                     newStatus,
-                    event_type
+                    action
                     }
                 });
 
