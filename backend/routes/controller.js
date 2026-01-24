@@ -42,16 +42,10 @@ module.exports = async function (fastify, opts) {
             // call stateMachine function
             const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
 
-            // insert new state into test table
-            const { data: insertedRow, error: insertError } = await fastify.supabase
-                .from("test_table")
-                .insert({ next_state: nextState })
-                .select("*")
-                .single();
-            if (insertError) {
-                console.error("Insert error:", insertError);
-                return reply.code(500).send({ error: "Failed to insert row" });
-            }
+            //############################
+            // create function that takes in the next state and gets the values the sensors should have
+            // then update the sensors table to reflect those values
+            //############################
 
             // insert data into cycle or create one
             const { data: insertCycle, error: cycleError} = await fastify.supabase
@@ -94,7 +88,7 @@ module.exports = async function (fastify, opts) {
             } 
 
             // Find the specific sensor from conditions array for insert
-            const targetSensor = conditions.find(s => s.sensor_id === sensorId);
+            const targetSensor = conditions.find(s => s.id === sensorId);
             if (!targetSensor) {
                 return reply.code(404).send({ error: "Sensor not found in conditions" });
             }
