@@ -78,13 +78,13 @@ module.exports = async function (fastify, opts) {
                 .update({
                     fsm_state: nextState,
                     last_valid_fsm_state: dock.fsm_state,
-                    exception_code: nextState === "Exception" ? "EXCEPTION1" : null,
-                    exception_payload: null,
+                    // exception_code: nextState === "Exception" ? "EXCEPTION1" : null,
+                    // exception_payload: null,
                     conditions: conditions,
                     active_cycle_id: dock.active_cycle_id,
                     fsm_state_entered_at: NOW
                 })
-                .eq("dock_bay_id", dockId)
+                .eq("id", dockId)
                 .select("*")
                 .single();
 
