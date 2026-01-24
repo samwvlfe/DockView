@@ -58,7 +58,7 @@ export async function fetchSensorsByDockID(id:string) {
 
 // POST controller actions
 export async function sendControllerAction(dockId: string, sensorId: string, action: string) {
-  const res = await fetch(`${baseURL}/controller/action/`, {
+  const res = await fetch(`${baseURL}/controller/action`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ dockId, sensorId, action}),
