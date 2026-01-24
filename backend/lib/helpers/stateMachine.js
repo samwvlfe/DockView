@@ -12,7 +12,7 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && newCycle
             && sensType.RESTRAINT === false //flips
             && sensType.DOOR === false 
-            && sensType>LEVELER === false
+            && sensType.LEVELER === false
             && ControllerAction === "Vehicle Restraint Engaged"
         ) {
             return "Restrained_DoorClosed";
@@ -23,7 +23,7 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && previousState === "Bay_Available"
             && sensType.RESTRAINT === true
             && sensType.DOOR === false //flips
-            && sensType>LEVELER === false
+            && sensType.LEVELER === false
             && ControllerAction === "Door Opened"
         ) {
             return "DoorOpen_LevelerClosed";
@@ -34,7 +34,7 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && previousState === "Restrained_DoorClosed"
             && sensType.RESTRAINT === true
             && sensType.DOOR === true 
-            && sensType>LEVELER === false //flip
+            && sensType.LEVELER === false //flip
             && ControllerAction === "Dock Leveler Deployed"
         ) {
             return "LevelerEngaged_ReadyToLoad";
@@ -45,7 +45,7 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && previousState === "DoorOpen_LevelerClosed"
             && sensType.RESTRAINT === true
             && sensType.DOOR === true 
-            && sensType>LEVELER === true //flip
+            && sensType.LEVELER === true //flip
             && ControllerAction === "Dock Leveler Reset"
         ) {
             return "LoadingComplete_DoorOpen";
@@ -56,7 +56,7 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && previousState === "LevelerEngaged_ReadyToLoad"
             && sensType.RESTRAINT === true
             && sensType.DOOR === true //flip
-            && sensType>LEVELER === false
+            && sensType.LEVELER === false
             && ControllerAction === "Door Closed"
         ) {
             return "DoorClosed_Restrained";
@@ -67,10 +67,10 @@ function nextDockState(currentState, previousState, conditions, ControllerAction
             && previousState === "LoadingComplete_DoorOpen"
             && sensType.RESTRAINT === true //flip
             && sensType.DOOR === false
-            && sensType>LEVELER === false
+            && sensType.LEVELER === false
             && ControllerAction === "Vehicle Restraint Disengaged"
         ) {
-            return "CycleComplete";
+            return "Cycle_Complete";
         }
     else{
         return "Exception"
