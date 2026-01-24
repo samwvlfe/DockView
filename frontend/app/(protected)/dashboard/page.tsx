@@ -3,23 +3,28 @@
 "use client";
 import { useEffect, useState } from "react";
 import DockGridCont from "@/components/DockGridCont";
-import Header from "@/components/Header";
 import InfoContainer from "@/components/InfoContainer";
-import { fetchDocks } from "@/lib/api";
-import { DockBay } from "@/types/interfaces";
+import { fetchDocks, fetchSensors } from "@/lib/api";
+import { DockBay, Sensor } from "@/types/interfaces";
 
 
 export default function DashboardPage() {
-    // Hold dock data here
+    // dock data
     const [docks, setDocks] = useState<DockBay[]>([]);
     const [selectedDockID, setselectedDockID] = useState<string | null>(null);
+    // sensor data
+    const [sensors, setSensors] = useState<Sensor[]>([]);
 
     // Fetch dock data first then listen for WS updates
     useEffect(() => {
     const initializeData = async () => {
-        // Load initial docks
-        const initialDocks = await fetchDocks();
-        setDocks(initialDocks);
+        // Load initial docks and sensors
+        const initDocks = await fetchDocks();
+        setDocks(initDocks);
+        const initSensors = await fetchSensors();
+        setSensors(initSensors);
+        console.log(sensors);
+
 
         // Open WS connection
         const ws = new WebSocket("wss://dockview.onrender.com/ws");

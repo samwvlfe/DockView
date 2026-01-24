@@ -44,6 +44,18 @@ export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResp
   return res.json();
 }
 
+//get all sensors
+export async function fetchSensors() {
+  const res = await fetch(`${baseURL}/sensors/all`, {
+    method: "GET",
+  });
+     
+  if(!res.ok){
+    throw new Error(`Failed to fetch sensors`);
+  }
+  return res.json();
+}
+
 //get sensors by dock_id
 export async function fetchSensorsByDockID(id:string) {
   const res = await fetch(`${baseURL}/sensors/${id}`, {
