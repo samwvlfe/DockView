@@ -13,7 +13,8 @@ fastify.register(require("@fastify/websocket"));
 
 // Register routes
 fastify.register(require("./routes/ws"));
-fastify.register(require("./routes/sensor"));
+fastify.register(require("./routes/sensors"));
+fastify.register(require("./routes/sensors/all"));
 fastify.register(require("./routes/docks"));
 fastify.register(require("./routes/index"));
 fastify.register(require("./routes/messages"));
