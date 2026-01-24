@@ -45,13 +45,21 @@ module.exports = async function (fastify, opts) {
             // insert new state into test table
             const { data: insertedRow, error: insertError } = await fastify.supabase
                 .from("test_table")
-                .insert({ next_state: nextState })
+                .insert({ next_state: toString(nextState) })
                 .select("*")
                 .single();
 
             if (insertError) {
-                request.log.error({ insertError }, "Failed to insert test_table row");
-                return reply.code(500).send({ error: "Failed to insert row" });
+                request.log.error({ 
+                    insertError, 
+                    nextState,
+                    errorDetails: insertError.message,
+                    errorCode: insertError.code 
+                }, "Failed to insert test_table row");
+                return reply.code(500).send({ 
+                    error: "Failed to insert row",
+                    details: insertError.message  // Send details to frontend for debugging
+                });
             }
 
             return reply.send({ insertedRow });
