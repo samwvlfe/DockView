@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import styles from "./DockBayCard.module.css";
+import Sensors from "@/components/Sensors";
 
 interface DockBayCardProps {
   id: string;
@@ -17,6 +18,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
   const [elapsed, setElapsed] = useState("00:00:00");
 
   useEffect(() => {
+
     // If dock is not occupied or missing timestamp → no timer needed
     if (status !== 'occupied' || !status_changed_at) {
       setElapsed("closed");
@@ -66,20 +68,9 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
         </div>
       </div>
 
-      <div className={`${styles.sensorCont} stack`}>
-        <div className={`row center gap5`}>
-          <div className={`${styles.sensStatus} sensorColActive`}></div>
-          <div className={styles.sensName}>Truck Restrained</div>
-        </div>
-        <div className={`row center gap5`}>
-          <div className={`${styles.sensStatus} sensorColActive`}></div>
-          <div className={styles.sensName}>Door Open</div>
-        </div>
-        <div className={`row center gap5`}>
-          <div className={`${styles.sensStatus} sensorColActive`}></div>
-          <div className={styles.sensName}>Leveler Deployed</div>
-        </div>
-      </div>
+      <Sensors
+        dock_bay={id}
+      />
     </div>
   );
 }

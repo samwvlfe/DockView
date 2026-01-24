@@ -4,26 +4,21 @@
 import { useEffect, useState } from "react";
 import DockGridCont from "@/components/DockGridCont";
 import InfoContainer from "@/components/InfoContainer";
-import { fetchDocks, fetchSensors } from "@/lib/api";
-import { DockBay, Sensor } from "@/types/interfaces";
+import { fetchDocks } from "@/lib/api";
+import { DockBay } from "@/types/interfaces";
 
 
 export default function DashboardPage() {
     // dock data
     const [docks, setDocks] = useState<DockBay[]>([]);
     const [selectedDockID, setselectedDockID] = useState<string | null>(null);
-    // sensor data
-    const [sensors, setSensors] = useState<Sensor[]>([]);
 
     // Fetch dock data first then listen for WS updates
     useEffect(() => {
         const initializeData = async () => {
-            // Load initial docks and sensors
+            // Load initial docks
             const initDocks = await fetchDocks();
             setDocks(initDocks);
-            const initSensors = await fetchSensors();
-            setSensors(initSensors);
-            console.log("sensors: ", initSensors);
 
 
             // Open WS connection
