@@ -27,7 +27,7 @@ module.exports = async function (fastify, opts) {
                 return reply.code(404).send({ error: "Dock not found" });
             }
 
-            // get sensor conditions
+            // get sensor CONDITIONS
             const { data: conditions, error: sensorsError } = await fastify.supabase
                 .from("sensors")
                 .select("id, sensor_type, sensor_state")
@@ -46,9 +46,19 @@ module.exports = async function (fastify, opts) {
                 return reply.code(404).send({ error: "Sensor not found" });
             }
 
-            // flip state of the sensor that caused POST and update in DB
-            const flippedSensorState = !targetSensor.sensor_state;
-            const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
+            // call stateMachine function
+            const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
+
+            let updatedConditions;
+            let cycleData;
+            let activeCycleId;
+
+            //No exception, change state and log
+            if(nextState !== "Exception"){
+
+                // flip state of the sensor that caused POST and update in DB
+                const flippedSensorState = !targetSensor.sensor_state;
+                const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
                 .from("sensors")
                 .update({
                     sensor_state: flippedSensorState,
@@ -57,47 +67,34 @@ module.exports = async function (fastify, opts) {
                 .eq("id", sensorId)
                 .select("*")
                 .single();
-            if (sensorUpdateErr) {
-                console.error(`Failed to update sensor ${sensorId}:`, sensorUpdateErr);
-                return reply.code(500).send({ error: "Failed to update sensor"});
-            }
-
-            console.log('📢 Broadcasting sensor update:', {
-                dock_bay_id: dockId,
-                sensor_id: sensorId,
-                sensor_state: flippedSensorState
-            });
-
-            broadcaster.broadcast({
-                type: 'sensor_updated',
-                payload: {
-                    dock_bay_id: dockId,
-                    sensor_id: sensorId,
-                    sensor_type: updatedSensor.sensor_type,
-                    sensor_state: flippedSensorState,
-                    timestamp: NOW
+                if (sensorUpdateErr) {
+                    console.error(`Failed to update sensor ${sensorId}:`, sensorUpdateErr);
+                    return reply.code(500).send({ error: "Failed to update sensor"});
                 }
-            });
-
-            console.log('✅ Broadcast sent');
-
-
-            // Create updated conditions array with the flipped sensor
-            const updatedConditions = conditions.map(sensor => 
-                sensor.id === sensorId 
+                
+                // Create updated conditions array with the flipped sensor
+                updatedConditions = conditions.map(sensor => 
+                    sensor.id === sensorId 
                     ? { ...sensor, sensor_state: flippedSensorState }
                     : sensor
-            );
+                );
 
-            // call stateMachine function
-            const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, updatedConditions, action);
-
-            let cycleData;
-            let activeCycleId;
-
-            // No active cycle - create new one
-            if (!dock.active_cycle_id) {
-                const { data: insertCycle, error: cycleError} = await fastify.supabase
+                // broadcast update
+                broadcaster.broadcast({
+                    type: 'sensor_updated',
+                    payload: {
+                        dock_bay_id: dockId,
+                        sensor_id: sensorId,
+                        sensor_type: updatedSensor.sensor_type,
+                        sensor_state: flippedSensorState,
+                        action: action,
+                        timestamp: NOW
+                    }
+                });
+                
+                // No active cycle - create new one
+                if (!dock.active_cycle_id) {
+                    const { data: insertCycle, error: cycleError} = await fastify.supabase
                     .from("dock_cycles")
                     .insert({
                         dock_bay_id: dockId,
@@ -111,16 +108,16 @@ module.exports = async function (fastify, opts) {
                     .select("*")
                     .single();
                     
-                if (cycleError) {
-                    console.error("Insert error: ", cycleError);
-                    return reply.code(500).send({ error: "Failed to insert cycle data"});
-                }
-                cycleData = insertCycle;
-                activeCycleId = insertCycle.id;
-            } 
-            // Active cycle exists - update it
-            else {
-                const { data: updateCycle, error: cycleUpdateError} = await fastify.supabase
+                    if (cycleError) {
+                        console.error("Insert error: ", cycleError);
+                        return reply.code(500).send({ error: "Failed to insert cycle data"});
+                    }
+                    cycleData = insertCycle;
+                    activeCycleId = insertCycle.id;
+                } 
+                // Active cycle exists - update it
+                else {
+                    const { data: updateCycle, error: cycleUpdateError} = await fastify.supabase
                     .from("dock_cycles")
                     .update({
                         terminal_state: nextState,
@@ -132,38 +129,38 @@ module.exports = async function (fastify, opts) {
                     .eq("id", dock.active_cycle_id)
                     .select("*")
                     .single();
-
-                if (cycleUpdateError) {
-                    console.error("Update error: ", cycleUpdateError);
-                    return reply.code(500).send({ error: "Failed to update cycle"});
+                    
+                    if (cycleUpdateError) {
+                        console.error("Update error: ", cycleUpdateError);
+                        return reply.code(500).send({ error: "Failed to update cycle"});
+                    }
+                    cycleData = updateCycle;
+                    activeCycleId = dock.active_cycle_id;
                 }
-                cycleData = updateCycle;
-                activeCycleId = dock.active_cycle_id;
-            }
-
-            // insert data into sensor_events
-            const { data: insertEvent, error: eventError} = await fastify.supabase
+                
+                // insert data into sensor_events
+                const { data: insertEvent, error: eventError} = await fastify.supabase
                 .from("sensor_events")
                 .insert({
                     sensor_id: sensorId, 
                     dock_bay_id: dockId,
                     payload: {
-                        sensor_state: flippedSensorState,
-                        sensor_type: targetSensor.sensor_type
+                        sensor_type: targetSensor.sensor_type,
+                        sensor_state: flippedSensorState
                     },
                     cycle_id: activeCycleId,
                     action: action
                 })
                 .select("*")
                 .single();
-
-            if (eventError) {
-                console.error("Insert error: ", eventError);
-                return reply.code(500).send({ error: "Failed to insert sensor event data"});
-            }
                 
-            // update info in public.dock_bays
-            const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
+                if (eventError) {
+                    console.error("Insert error: ", eventError);
+                    return reply.code(500).send({ error: "Failed to insert sensor event data"});
+                }
+                
+                // update info in public.dock_bays
+                const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
                 .from("dock_bays")
                 .update({
                     fsm_state: nextState,
@@ -175,12 +172,90 @@ module.exports = async function (fastify, opts) {
                 .eq("id", dockId)
                 .select("*")
                 .single();
-
-            if (dockErr) {
-                console.error("Update error: ", dockErr);
-                return reply.code(500).send({ error: "Failed to update dock"});
-            }
                 
+                if (dockErr) {
+                    console.error("Update error: ", dockErr);
+                    return reply.code(500).send({ error: "Failed to update dock"});
+                }
+                
+            }
+            // log exception and broadcast update
+            else{
+                // if active cycle, update to exception
+                if (dock.active_cycle_id) {
+                    const { data: insertCycle, error: cycleError} = await fastify.supabase
+                    .from("dock_cycles")
+                    .update({
+                        terminal_state: nextState,
+                        terminal_reason: action,
+                        state_started_at: NOW,
+                        meta: updatedConditions,
+                        ended_at: nextState === "Cycle_Complete" ? NOW : null
+                    })
+                    .select("*")
+                    .single();
+                    
+                    if (cycleError) {
+                        console.error("Insert error: ", cycleError);
+                        return reply.code(500).send({ error: "Failed to insert cycle data"});
+                    }
+                    cycleData = insertCycle;
+                    activeCycleId = insertCycle.id;
+                }
+
+                // insert exception into public.sensor_events
+                const { data: insertEvent, error: eventError} = await fastify.supabase
+                .from("sensor_events")
+                .insert({
+                    sensor_id: sensorId, 
+                    dock_bay_id: dockId,
+                    payload: {
+                        sensor_type: targetSensor.sensor_type,
+                        sensor_state: nextState
+                    },
+                    cycle_id: activeCycleId,
+                    action: action
+                })
+                .select("*")
+                .single();
+                
+                if (eventError) {
+                    console.error("Insert error: ", eventError);
+                    return reply.code(500).send({ error: "Failed to insert sensor event data"});
+                }
+
+                // update exception in public.dock_bays
+                const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
+                .from("dock_bays")
+                .update({
+                    fsm_state: nextState,
+                    last_valid_fsm_state: dock.fsm_state,
+                    conditions: conditions,
+                    fsm_state_entered_at: NOW
+                })
+                .eq("id", dockId)
+                .select("*")
+                .single();
+                
+                if (dockErr) {
+                    console.error("Update error: ", dockErr);
+                    return reply.code(500).send({ error: "Failed to update dock"});
+                }
+
+                // broadcast update
+                broadcaster.broadcast({
+                    type: 'sensor_updated',
+                    payload: {
+                        dock_bay_id: dockId,
+                        sensor_id: sensorId,
+                        sensor_type: updatedSensor.sensor_type,
+                        sensor_state: flippedSensorState ? flippedSensorState : null,
+                        action: action,
+                        timestamp: NOW
+                    }
+                });
+            }
+
             // POST return body
             return reply.send({ 
                 success: true,

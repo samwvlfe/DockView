@@ -7,10 +7,12 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
 
     // NOTE: logic comes from truth table in Google Docs https://docs.google.com/document/d/1OW7ICOHWWbTl6MIPaEOI94iCg4rlvvch8xvbQnZDOVo/edit?tab=t.0
 
+    // Incoming conditions are of the previous state
+
     // >>> (1 0 0)
     if (currentState === "Bay_Available"
             && newCycle
-            && sensType.RESTRAINT === true
+            && sensType.RESTRAINT === false
             && sensType.DOOR === false 
             && sensType.LEVELER === false
             && ControllerAction === "Vehicle Restraint Engaged"
@@ -22,7 +24,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     else if (currentState === "Restrained_DoorClosed"
             && previousState === "Bay_Available"
             && sensType.RESTRAINT === true
-            && sensType.DOOR === true
+            && sensType.DOOR === false
             && sensType.LEVELER === false
             && ControllerAction === "Door Opened"
         ) {
@@ -34,7 +36,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
             && previousState === "Restrained_DoorClosed"
             && sensType.RESTRAINT === true
             && sensType.DOOR === true 
-            && sensType.LEVELER === true
+            && sensType.LEVELER === false
             && ControllerAction === "Dock Leveler Deployed"
         ) {
             return "LevelerEngaged_ReadyToLoad";
@@ -45,7 +47,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
             && previousState === "DoorOpen_LevelerClosed"
             && sensType.RESTRAINT === true
             && sensType.DOOR === true 
-            && sensType.LEVELER === false
+            && sensType.LEVELER === true
             && ControllerAction === "Dock Leveler Reset"
         ) {
             return "LoadingComplete_DoorOpen";
@@ -55,7 +57,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     else if (currentState === "LoadingComplete_DoorOpen"
             && previousState === "LevelerEngaged_ReadyToLoad"
             && sensType.RESTRAINT === true
-            && sensType.DOOR === false
+            && sensType.DOOR === true
             && sensType.LEVELER === false
             && ControllerAction === "Door Closed"
         ) {
@@ -65,7 +67,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     // (0 0 0)
     else if (currentState === "DoorClosed_Restrained"
             && previousState === "LoadingComplete_DoorOpen"
-            && sensType.RESTRAINT === false
+            && sensType.RESTRAINT === true
             && sensType.DOOR === false
             && sensType.LEVELER === false
             && ControllerAction === "Vehicle Restraint Disengaged"

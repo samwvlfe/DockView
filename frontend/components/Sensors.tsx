@@ -22,17 +22,11 @@ export default function Sensors({ dock_bay, sensors }: SensorProps) {
         // Connect to WebSocket
         const ws = new WebSocket("wss://dockview.onrender.com/ws");
 
-        ws.onopen = () => {
-            console.log(`WS Connected for sensors in dock ${dock_bay}`);
-        };
-
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
             
             // Only handle sensor updates for THIS dock bay
-            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === dock_bay) {
-                console.log('🔴 Sensor updated for this dock:', msg.payload);
-                
+            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === dock_bay) {                
                 setSensors(prev => 
                     prev.map(sensor => 
                         sensor.id === msg.payload.sensor_id 

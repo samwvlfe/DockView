@@ -14,7 +14,7 @@ export default function Controller() {
     // State
     const [currState, setCurrState] = useState<string | null>(null);
 
-    // fetch docks
+    // fetch docks for selection drop down
     useEffect(() => {
         (async () => {
             const initDocks = await fetchDocks();
@@ -22,7 +22,7 @@ export default function Controller() {
         })();
     }, []);
 
-    // fetch sensors when dock selected/changed
+    // fetch sensors for selected dock
     useEffect(() => {
         if (!selectedUuid) {
             setSensors([]);
@@ -53,11 +53,11 @@ export default function Controller() {
     const sensorTypes = useMemo(() => {
         return new Set(sensors.map((s) => s.sensor_type));
     }, [sensors]);
-    
     const hasDoor = sensorTypes.has("DOOR");
     const hasLeveler = sensorTypes.has("LEVELER");
-    const hasRestraint = sensorTypes.has("RESTRAINT") || sensorTypes.has("RESTRIANT");
-    //access sensor ID to hook into button
+    const hasRestraint = sensorTypes.has("RESTRAINT");
+
+    //access sensor ID for seach sensor type for selected dock
     const doorSensorId = sensors.find(s => s.sensor_type === "DOOR")?.id ?? null;
     const levelerSensorId = sensors.find(s => s.sensor_type === "LEVELER")?.id ?? null;
     const restraintSensorId = sensors.find(s => s.sensor_type === "RESTRAINT")?.id ?? null;
@@ -76,8 +76,29 @@ export default function Controller() {
     // get selected dock to access state
     const selectedDock = docks.find(d => d.id === selectedUuid) ?? null;
     const selectedState = selectedDock?.fsm_state ?? null;
+
     useEffect(() => {
-        setCurrState(selectedState);
+        // Connect to WebSocket
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            
+            // Only handle sensor updates for THIS dock bay
+            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {                
+                setCurrState(msg.payload.action);
+            }
+        };
+
+        ws.onerror = (err) => console.error("WS ERROR:", err);
+        ws.onclose = () => console.log(`WS Disconnected for dock ${selectedUuid}`);
+
+        // Cleanup on unmount
+        return () => {
+            console.log(`Closing WS for dock ${selectedUuid}`);
+            ws.close();
+        };
+
     }, [selectedState]);
 
     return (

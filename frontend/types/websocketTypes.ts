@@ -36,7 +36,8 @@ export interface SensorUpdatePayload {
     dock_bay_id: string;
     sensor_id: string;
     sensor_type: string;
-    sensor_state: boolean;
+    sensor_state?: boolean | null;
+    action: string;
     timestamp: string;
 }
 export interface SensorUpdateMessage {
