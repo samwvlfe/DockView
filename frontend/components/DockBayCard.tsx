@@ -4,7 +4,6 @@ import styles from "./DockBayCard.module.css";
 import Sensors from "@/components/Sensors";
 import { Sensor } from "@/types/interfaces";
 import { fetchSensorsByDockID } from "@/lib/api";
-import { createSupabaseClient } from "@/lib/supabaseClient";
 
 interface DockBayCardProps {
   id: string;
@@ -22,6 +21,14 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
 
   // Timer effect (unchanged)
   useEffect(() => {
+
+    // Initial fetch of sensors for this dock bay
+    const initData = async () => {
+      const initSensors = await fetchSensorsByDockID(id);
+      setSensors(initSensors);
+    };
+    initData();
+
     if (status !== 'occupied' || !status_changed_at) {
       setElapsed("closed");
       return;
@@ -49,54 +56,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
     return () => clearInterval(interval);
   }, [status, status_changed_at]);
 
-  // NEW: Sensors fetch + realtime subscription
-  useEffect(() => {
-    if (!id) return;
 
-    console.log('🔵 Setting up realtime for dock_bay:', id);
-    const supabase = createSupabaseClient();
-
-    // Initial fetch of sensors for this dock bay
-    const initData = async () => {
-      const initSensors = await fetchSensorsByDockID(id);
-      console.log('📊 Initial sensors loaded for', name, ':', initSensors);
-      setSensors(initSensors);
-    };
-    initData();
-
-    // Subscribe to realtime updates for sensors in THIS dock bay only
-    const channel = supabase
-      .channel(`dock-sensors-${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'sensors',
-          filter: `dock_bay_id=eq.${id}`
-        },
-        (payload) => {
-          console.log('🔴 Sensor updated in', name, ':', payload.new);
-          // Update the specific sensor in state
-          setSensors(prev =>
-            prev.map(sensor =>
-              sensor.id === payload.new.id
-                ? { ...sensor, ...payload.new as Sensor }
-                : sensor
-            )
-          );
-        }
-      )
-      .subscribe((status) => {
-        console.log('✅ Subscription status for', name, ':', status);
-      });
-
-    // Cleanup subscription when component unmounts
-    return () => {
-      console.log('🔌 Unsubscribing from', name);
-      supabase.removeChannel(channel);
-    };
-  }, [id, name]);
 
   return (
     <div 
@@ -118,7 +78,7 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
         </div>
       </div>
 
-      <Sensors sensors={sensors} />
+      <Sensors dock_bay={id} sensors={sensors} />
     </div>
   );
 }

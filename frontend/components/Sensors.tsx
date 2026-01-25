@@ -1,26 +1,77 @@
 "use client"
+import { useEffect, useState } from "react";
 import styles from "./DockBayCard.module.css";
 import { Sensor } from "@/types/interfaces";
 
 interface SensorProps {
+    dock_bay: string | null;
     sensors: Sensor[];
 }
 
-export default function Sensors({ sensors }: SensorProps) {
+export default function Sensors({ dock_bay, sensors }: SensorProps) {
+
+    const [theseSensors, setSensors] = useState<Sensor[]>([]);
+
+    useEffect(() => {
+        setSensors(sensors);
+    }, [sensors]);
+
+    useEffect(() => {
+        if (!dock_bay) return;
+
+        // Connect to WebSocket
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
+
+        ws.onopen = () => {
+            console.log(`WS Connected for sensors in dock ${dock_bay}`);
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            
+            // Only handle sensor updates for THIS dock bay
+            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === dock_bay) {
+                console.log('🔴 Sensor updated for this dock:', msg.payload);
+                
+                setSensors(prev => 
+                    prev.map(sensor => 
+                        sensor.id === msg.payload.sensor_id 
+                            ? { 
+                                ...sensor, 
+                                sensor_state: msg.payload.sensor_state,
+                                sensor_type: msg.payload.sensor_type
+                            }
+                            : sensor
+                    )
+                );
+            }
+        };
+
+        ws.onerror = (err) => console.error("WS ERROR:", err);
+        ws.onclose = () => console.log(`WS Disconnected for dock ${dock_bay}`);
+
+        // Cleanup on unmount
+        return () => {
+            console.log(`Closing WS for dock ${dock_bay}`);
+            ws.close();
+        };
+    }, [dock_bay]);
+
+
     return (
         <div className={`${styles.sensorCont} stack`}>
-            {sensors.length === 0 ? (
+            {theseSensors.length === 0 ? (
                 <div>No sensors found</div>
             ) : (
-                sensors.map((sensor) => (
-                    <div key={sensor.id} className={`row center gap5`}>
+                theseSensors.map((s) => (
+                    <div key={s.id} className={`row center gap5`}>
                         <div 
                             className={`${styles.sensStatus} ${
-                                sensor.sensor_state ? 'sensorColActive' : 'sensorColInactive'
+                                s.sensor_state ? 'sensorColActive' : 'sensorColInactive'
                             }`}
                         ></div>
                         <div className={styles.sensName}>
-                            {sensor.sensor_type}
+                            {s.sensor_type}
                         </div>
                     </div>
                 ))

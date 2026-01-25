@@ -31,10 +31,24 @@ export interface DockTurnoverMessage {
     payload: DockTurnoverPayload;
 }
 
+// SENSOR UPDATED MESSAGE
+export interface SensorUpdatePayload {
+    dock_bay_id: string;
+    sensor_id: string;
+    sensor_type: string;
+    sensor_state: boolean;
+    timestamp: string;
+}
+export interface SensorUpdateMessage {
+    type: "sensor_updated";
+    payload: SensorUpdatePayload;
+}
+
 //ADD MORE MESSAGE TYPES AS NEEDED
 
 // UNION OF ALL POSSIBLE MESSAGES
 export type WebSocketMessage =
   | { type: "dock_status_update"; payload: DockStatusUpdatePayload }
   | { type: "load_completed"; payload: LoadCompletedPayload }
-  | { type: "dock_turnover"; payload: DockTurnoverPayload };
+  | { type: "dock_turnover"; payload: DockTurnoverPayload }
+  | { type: "sensor_updated"; payload: SensorUpdatePayload };

@@ -45,7 +45,7 @@ module.exports = async function (fastify, opts) {
                 return reply.code(404).send({ error: "Sensor not found" });
             }
 
-            //flip state of the sensor that caused POST and update in DB
+            // flip state of the sensor that caused POST and update in DB
             const flippedSensorState = !targetSensor.sensor_state;
             const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
                 .from("sensors")
@@ -60,6 +60,19 @@ module.exports = async function (fastify, opts) {
                 console.error(`Failed to update sensor ${sensorId}:`, sensorUpdateErr);
                 return reply.code(500).send({ error: "Failed to update sensor"});
             }
+
+            // broadcast sensor updates
+            fastify.websocketServer.broadcast({
+                type: 'sensor_updated',
+                payload: {
+                    dock_bay_id: dockId,
+                    sensor_id: sensorId,
+                    sensor_type: updatedSensor.sensor_type,
+                    sensor_state: flippedSensorState,
+                    timestamp: NOW
+                }
+            });
+
 
             // Create updated conditions array with the flipped sensor
             const updatedConditions = conditions.map(sensor => 
