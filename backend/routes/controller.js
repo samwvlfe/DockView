@@ -61,8 +61,13 @@ module.exports = async function (fastify, opts) {
                 return reply.code(500).send({ error: "Failed to update sensor"});
             }
 
-            // broadcast sensor updates
-            fastify.websocketServer.broadcast({
+            console.log('📢 Broadcasting sensor update:', {
+                dock_bay_id: dockId,
+                sensor_id: sensorId,
+                sensor_state: flippedSensorState
+            });
+
+            broadcaster.broadcast({
                 type: 'sensor_updated',
                 payload: {
                     dock_bay_id: dockId,
@@ -72,6 +77,8 @@ module.exports = async function (fastify, opts) {
                     timestamp: NOW
                 }
             });
+
+            console.log('✅ Broadcast sent');
 
 
             // Create updated conditions array with the flipped sensor
