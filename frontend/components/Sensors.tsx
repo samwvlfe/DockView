@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import styles from "./DockBayCard.module.css";
 import { Sensor } from "@/types/interfaces";
 import { fetchSensorsByDockID } from "@/lib/api";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 interface SensorProps {
     dock_bay: string | null;
@@ -12,26 +13,47 @@ export default function Sensors({ dock_bay }: SensorProps){
     const [theseSensors, setSensors] = useState<Sensor[]>([]);
 
     useEffect(() => {
-        const initData = async () => {
-            if (!dock_bay) return;
-            
+        if (!dock_bay) return;
+
+        const supabase = createSupabaseClient();
+
+        const initData = async () => {    
             const initSensors = await fetchSensorsByDockID(dock_bay);
             setSensors(initSensors);
         };
         initData();
         
-    }, [dock_bay]) // Add dock_bay to dependency array
+        // Subscribe to real-time updates
+        const channel = supabase
+            .channel(`sensors-${dock_bay}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'sensors',
+                    filter: `dock_bay_id=eq.${dock_bay}`
+                },
+                (payload) => {
+                    console.log('Sensor updated:', payload);
+                    // Update the specific sensor in state
+                    setSensors(prev => 
+                        prev.map(sensor => 
+                            sensor.id === payload.new.id 
+                                ? { ...sensor, ...payload.new as Sensor }
+                                : sensor
+                        )
+                    );
+                }
+            )
+            .subscribe();
 
-    // Helper function to get friendly sensor names
-    // const getSensorDisplayName = (sensorType: string) => {
-    //     const nameMap: Record<string, string> = {
-    //         'truck_restrained': 'Truck Restrained',
-    //         'door_open': 'Door Open',
-    //         'leveler_deployed': 'Leveler Deployed',
-    //         // Add more mappings as needed
-    //     };
-    //     return nameMap[sensorType] || sensorType;
-    // };
+        // Cleanup subscription on unmount
+        return () => {
+            supabase.removeChannel(channel);
+        };
+
+    }, [dock_bay])
 
     return (
         <div className={`${styles.sensorCont} stack`}>
