@@ -15,6 +15,7 @@ export default function Sensors({ dock_bay }: SensorProps){
     useEffect(() => {
         if (!dock_bay) return;
 
+        console.log('🔵 Setting up realtime for dock_bay:', dock_bay);
         const supabase = createSupabaseClient();
 
         const initData = async () => {    
@@ -35,7 +36,11 @@ export default function Sensors({ dock_bay }: SensorProps){
                     filter: `dock_bay_id=eq.${dock_bay}`
                 },
                 (payload) => {
-                    console.log('Sensor updated:', payload);
+                    console.log('🔴 REALTIME UPDATE RECEIVED:', payload);
+                    console.log('Event type:', payload.eventType);
+                    console.log('New data:', payload.new);
+                    console.log('Old data:', payload.old);
+
                     // Update the specific sensor in state
                     setSensors(prev => 
                         prev.map(sensor => 
@@ -46,10 +51,13 @@ export default function Sensors({ dock_bay }: SensorProps){
                     );
                 }
             )
-            .subscribe();
+            .subscribe((status) => {
+                console.log('Subscription Status:', status);
+            });
 
         // Cleanup subscription on unmount
         return () => {
+            console.log('UNSubscribing');
             supabase.removeChannel(channel);
         };
 
