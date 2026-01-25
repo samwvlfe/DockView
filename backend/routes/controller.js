@@ -1,4 +1,5 @@
 //Controller Actions
+const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
 
 module.exports = async function (fastify, opts) {
