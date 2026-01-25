@@ -49,9 +49,14 @@ module.exports = async function (fastify, opts) {
             // call stateMachine function
             const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
 
-            let updatedConditions;
-            let cycleData;
-            let activeCycleId;
+            let updatedConditions = conditions;
+            let cycleData = null;
+            let activeCycleId = dock.active_cycle_id ?? null;
+
+            let updatedSensor = null;
+            let flippedSensorState = null;
+            let updatedDockInfo = null;
+            let insertEvent = null;
 
             //No exception, change state and log
             if(nextState !== "Exception"){
@@ -192,6 +197,7 @@ module.exports = async function (fastify, opts) {
                         meta: updatedConditions,
                         ended_at: nextState === "Cycle_Complete" ? NOW : null
                     })
+                    .eq("id", activeCycleId)
                     .select("*")
                     .single();
                     
@@ -249,7 +255,7 @@ module.exports = async function (fastify, opts) {
                         dock_bay_id: dockId,
                         sensor_id: sensorId,
                         sensor_type: updatedSensor.sensor_type,
-                        sensor_state: flippedSensorState ? flippedSensorState : null,
+                        sensor_state: targetSensor.sensor_state,
                         action: action,
                         timestamp: NOW
                     }

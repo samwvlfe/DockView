@@ -49,6 +49,33 @@ export default function Controller() {
         };
     }, [selectedUuid]);
 
+    // get selected dock to access state
+    const selectedDock = docks.find(d => d.id === selectedUuid) ?? null;
+    const selectedState = selectedDock?.fsm_state ?? null;
+
+    // set initial state when dock changes
+    useEffect(() => {
+        setCurrState(selectedState);
+    }, [selectedState]);
+
+    // change state automatically via websocket from controller.js
+    useEffect(() => {
+        if (!selectedUuid) return;
+
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {
+            setCurrState(msg.payload.nextState ?? msg.payload.action);
+            }
+        };
+
+        return () => ws.close();
+    }, [selectedUuid]);
+
+
     // check for sensors
     const sensorTypes = useMemo(() => {
         return new Set(sensors.map((s) => s.sensor_type));
@@ -73,33 +100,6 @@ export default function Controller() {
         }
     }
 
-    // get selected dock to access state
-    const selectedDock = docks.find(d => d.id === selectedUuid) ?? null;
-    const selectedState = selectedDock?.fsm_state ?? null;
-
-    useEffect(() => {
-        // Connect to WebSocket
-        const ws = new WebSocket("wss://dockview.onrender.com/ws");
-
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            
-            // Only handle sensor updates for THIS dock bay
-            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {                
-                setCurrState(msg.payload.action);
-            }
-        };
-
-        ws.onerror = (err) => console.error("WS ERROR:", err);
-        ws.onclose = () => console.log(`WS Disconnected for dock ${selectedUuid}`);
-
-        // Cleanup on unmount
-        return () => {
-            console.log(`Closing WS for dock ${selectedUuid}`);
-            ws.close();
-        };
-
-    }, [selectedState]);
 
     return (
         <div className={`stack center gap20`}>
