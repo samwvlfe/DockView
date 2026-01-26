@@ -210,15 +210,16 @@ export default function Controller() {
                 )}
             </div>
             <div>
+                <span>Reset Dock Bay: </span>
                 <button
                     type="button"
                     disabled={!selectedUuid || !levelerSensorId}
                     className="bayReadyBtn"
                     onClick={() => resetBay()}
                 >
-
+                    Reset
                 </button>
-                </div>
+            </div>
         </div>
     );
 }
