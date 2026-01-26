@@ -289,4 +289,45 @@ module.exports = async function (fastify, opts) {
         }
     });
 
+    fastify.post("/controller/reset", async (request, reply) => {
+        try{
+            const NOW = new Date().toISOString();
+
+            const { dockBay_Id } = request.body;
+            
+            if(!dockBay_Id){
+                return reply.code(400).send({error: "Missing required fields"});
+            }
+
+            // Update dock bay state to available
+            const { data: dock, error: dockError } = await fastify.supabase
+                .from("dock_bays")
+                .update({
+                    fsm_state_entered_at: NOW,
+                    fsm_state: "Bay_Available",
+                    last_valid_fsm_state: "Cycle_Complete"
+                })
+                .eq("id", dockBay_Id)
+                .select("fsm_state")
+                .single();
+            
+            if (dockError) {
+                return reply.code(500).send({ error: "Database Error", dockError });
+            }
+            if (!dock) {
+                return reply.code(404).send({ error: "Dock not found" });
+            }
+
+            // POST return body
+            return reply.send({ 
+                success: true,
+                resetState: "Bay_Available"
+            });
+
+        } catch (err) {
+            console.error("Controller error:", err);
+            return reply.code(500).send({ error: "Error with state controller" });
+        }
+    })
+
 }

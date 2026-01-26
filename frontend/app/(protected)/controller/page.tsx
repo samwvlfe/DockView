@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import styles from "./controllerpage.module.css";
-import { fetchDocks, fetchSensorsByDockID, sendControllerAction } from "@/lib/api";
+import { fetchDocks, fetchSensorsByDockID, sendControllerAction, resetDockBay } from "@/lib/api";
 import { DockBay, Sensor } from "@/types/interfaces";
 
 export default function Controller() {
@@ -100,6 +100,17 @@ export default function Controller() {
         }
     }
 
+    async function resetBay() {
+        try{
+            const result = await resetDockBay(selectedUuid);
+            if(result){
+                setCurrState(result.resetState);
+            }
+        } catch (e) {
+            console.error("action failed:", e);
+        }
+    }
+
 
     return (
         <div className={`stack center gap20`}>
@@ -135,7 +146,7 @@ export default function Controller() {
                         <div className={styles.buttonName}>Vehicle Restraint:</div>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !restraintSensorId}  // ✓ Correct
+                            disabled={!selectedUuid || !restraintSensorId}
                             className={`${hasRestraint ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Vehicle Restraint Engaged", restraintSensorId)}
                         >
@@ -143,7 +154,7 @@ export default function Controller() {
                         </button>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !restraintSensorId}  // ✓ Correct
+                            disabled={!selectedUuid || !restraintSensorId}
                             className={`${hasRestraint ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Vehicle Restraint Disengaged", restraintSensorId)}
                         >
@@ -155,7 +166,7 @@ export default function Controller() {
                         <div className={styles.buttonName}>Dock Bay Door:</div>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !doorSensorId}  // ✓ Fixed: was restraintSensorId
+                            disabled={!selectedUuid || !doorSensorId}
                             className={`${hasDoor ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Door Opened", doorSensorId)}
                         >
@@ -163,7 +174,7 @@ export default function Controller() {
                         </button>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !doorSensorId}  // ✓ Fixed: was restraintSensorId
+                            disabled={!selectedUuid || !doorSensorId}
                             className={`${hasDoor ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Door Closed", doorSensorId)}
                         >
@@ -175,7 +186,7 @@ export default function Controller() {
                         <div className={styles.buttonName}>Dock Leveler:</div>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !levelerSensorId}  // ✓ Fixed: was restraintSensorId
+                            disabled={!selectedUuid || !levelerSensorId}
                             className={`${hasLeveler ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Dock Leveler Deployed", levelerSensorId)}
                         >
@@ -183,7 +194,7 @@ export default function Controller() {
                         </button>
                         <button
                             type="button"
-                            disabled={!selectedUuid || !levelerSensorId}  // ✓ Fixed: was restraintSensorId
+                            disabled={!selectedUuid || !levelerSensorId}
                             className={`${hasLeveler ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Dock Leveler Reset", levelerSensorId)}
                         >
@@ -198,6 +209,16 @@ export default function Controller() {
                     </div>
                 )}
             </div>
+            <div>
+                <button
+                    type="button"
+                    disabled={!selectedUuid || !levelerSensorId}
+                    className="bayReadyBtn"
+                    onClick={() => resetBay()}
+                >
+
+                </button>
+                </div>
         </div>
     );
 }

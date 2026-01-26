@@ -82,3 +82,18 @@ export async function sendControllerAction(dockId: string, sensorId: string, act
   } 
   return res.json();
 }
+
+// POST reset dock bay after "Cycle_Complete" to "Bay_Available"
+export async function resetDockBay(dockBay_Id: string | null) {
+  const res = await fetch(`${baseURL}/controller/reset`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ dockBay_Id }),
+  });
+
+  if(!res.ok){
+    const text = await res.text().catch(() => "");
+    throw new Error(`Reset failed: ${res.status} ${text}`);
+  } 
+  return res.json();
+}
