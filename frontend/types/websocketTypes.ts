@@ -37,6 +37,7 @@ export interface SensorUpdatePayload {
     sensor_id: string;
     sensor_type: string;
     sensor_state?: boolean | null;
+    new_fsm_state: string,
     action: string;
     timestamp: string;
 }

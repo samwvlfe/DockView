@@ -68,7 +68,7 @@ export default function Controller() {
             const msg = JSON.parse(event.data);
 
             if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {
-            setCurrState(msg.payload.nextState ?? msg.payload.action);
+            setCurrState(msg.payload.new_fsm_state);
             }
         };
 
@@ -205,7 +205,7 @@ export default function Controller() {
 
                 {currState !== null && (
                     <div>
-                        <h3>Bay Info: {currState}</h3>
+                        <h3>Bay Status: {currState}</h3>
                     </div>
                 )}
             </div>

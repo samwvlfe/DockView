@@ -270,6 +270,7 @@ module.exports = async function (fastify, opts) {
                     sensor_id: sensorId,
                     sensor_type: targetSensor.sensor_type,
                     sensor_state: flippedSensorState ?? targetSensor.sensor_state,
+                    new_fsm_state: nextState,
                     action: action,
                     timestamp: NOW
                 }
