@@ -63,7 +63,7 @@ module.exports = async function (fastify, opts) {
 
                 // flip state of the sensor that caused POST and update in DB
                 flippedSensorState = !targetSensor.sensor_state;
-                const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
+                const{ data: flippSensorVal, error: sensorUpdateErr } = await fastify.supabase
                 .from("sensors")
                 .update({
                     sensor_state: flippedSensorState,
@@ -76,6 +76,7 @@ module.exports = async function (fastify, opts) {
                     console.error(`Failed to update sensor ${sensorId}:`, sensorUpdateErr);
                     return reply.code(500).send({ error: "Failed to update sensor"});
                 }
+                updatedSensor = flippSensorVal;
                 
                 // Create updated conditions array with the flipped sensor
                 updatedConditions = conditions.map(sensor => 
@@ -143,7 +144,7 @@ module.exports = async function (fastify, opts) {
                     },
                     cycle_id: activeCycleId,
                     action: action, 
-                    sensor_name: conditions.name
+                    sensor_name: targetSensor.name
                 })
                 .select("*")
                 .single();
@@ -179,7 +180,7 @@ module.exports = async function (fastify, opts) {
                 const { data: exceptionInsert, error: exceptionInsertError} = await fastify.supabase
                 .from("exceptions")
                 .insert({
-                    sensor_name: conditions.name, 
+                    sensor_name: targetSensor.name, 
                     previous_state: dock.fsm_state,
                     conditions: conditions,
                     action: action
@@ -229,7 +230,7 @@ module.exports = async function (fastify, opts) {
                     },
                     cycle_id: activeCycleId,
                     action: action,
-                    sensor_name: conditions.name
+                    sensor_name: targetSensor.name
                 })
                 .select("*")
                 .single();
@@ -256,19 +257,6 @@ module.exports = async function (fastify, opts) {
                     console.error("Update error: ", dockErr);
                     return reply.code(500).send({ error: "Failed to update dock"});
                 }
-
-                // broadcast update
-                broadcaster.broadcast({
-                    type: 'sensor_updated',
-                    payload: {
-                        dock_bay_id: dockId,
-                        sensor_id: sensorId,
-                        sensor_type: updatedSensor.sensor_type,
-                        sensor_state: targetSensor.sensor_state,
-                        action: action,
-                        timestamp: NOW
-                    }
-                });
             }
 
             // broadcast update
@@ -277,8 +265,8 @@ module.exports = async function (fastify, opts) {
                 payload: {
                     dock_bay_id: dockId,
                     sensor_id: sensorId,
-                    sensor_type: updatedSensor.sensor_type,
-                    sensor_state: flippedSensorState === null ? updatedSensor.sensor_state : flippedSensorState,
+                    sensor_type: targetSensor.sensor_type,
+                    sensor_state: flippedSensorState ?? targetSensor.sensor_state,
                     action: action,
                     timestamp: NOW
                 }
@@ -287,8 +275,9 @@ module.exports = async function (fastify, opts) {
             // POST return body
             return reply.send({ 
                 success: true,
-                nextState,
-                updatedSensor,
+                sensor_name: targetSensor.name,
+                nextState: nextState,
+                updated_sensor: updatedSensor,
                 cycle: cycleData,
                 dockBay: updatedDockInfo,
                 event: insertEvent
