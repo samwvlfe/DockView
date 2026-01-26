@@ -1,4 +1,5 @@
 //Controller Actions
+const { act } = require("react");
 const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
 
@@ -48,6 +49,9 @@ module.exports = async function (fastify, opts) {
 
             // call stateMachine function
             const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
+
+            console.log("action: ", action);
+            console.log("NExt State: ", nextState);
 
             let updatedConditions = conditions;
             let cycleData = null;

@@ -205,7 +205,7 @@ export default function Controller() {
 
                 {currState !== null && (
                     <div>
-                        <h3>CURRENT STATE: {currState}</h3>
+                        <h3>Bay Info: {currState}</h3>
                     </div>
                 )}
             </div>
