@@ -5,78 +5,89 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
 
     const newCycle = previousState == null || previousState === "Cycle_Complete";
 
-    // NOTE: logic comes from truth table in Google Docs https://docs.google.com/document/d/1OW7ICOHWWbTl6MIPaEOI94iCg4rlvvch8xvbQnZDOVo/edit?tab=t.0
-
-    // Incoming conditions are of the previous state
-
-    // >>> (1 0 0)
-    if (currentState === "Bay_Available"
-            && newCycle
-            && sensType.RESTRAINT === false
-            && sensType.DOOR === false 
-            && sensType.LEVELER === false
-            && ControllerAction === "Vehicle Restraint Engaged"
-        ) {
-            return "Restrained_DoorClosed";
+    // Define reversible actions - these can happen without following strict sequence
+    const reversibleTransitions = {
+        // Restraint can be engaged/disengaged from Bay_Available
+        "Bay_Available": {
+            "Vehicle Restraint Engaged": {
+                nextState: "Restrained_DoorClosed",
+                requires: { RESTRAINT: false, DOOR: false, LEVELER: false }
+            },
+            "Vehicle Restraint Disengaged": {
+                nextState: "Bay_Available", // stays same
+                requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
+            }
+        },
+        "Restrained_DoorClosed": {
+            "Vehicle Restraint Disengaged": {
+                nextState: "Bay_Available",
+                requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
+            },
+            "Door Opened": {
+                nextState: "DoorOpen_LevelerClosed",
+                requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
+            }
+        },
+        "DoorOpen_LevelerClosed": {
+            "Door Closed": {
+                nextState: "Restrained_DoorClosed",
+                requires: { RESTRAINT: true, DOOR: true, LEVELER: false }
+            },
+            "Dock Leveler Deployed": {
+                nextState: "LevelerEngaged_ReadyToLoad",
+                requires: { RESTRAINT: true, DOOR: true, LEVELER: false }
+            }
+        },
+        "LevelerEngaged_ReadyToLoad": {
+            "Dock Leveler Reset": {
+                nextState: "LoadingComplete_DoorOpen",
+                requires: { RESTRAINT: true, DOOR: true, LEVELER: true }
+            }
+        },
+        "LoadingComplete_DoorOpen": {
+            "Dock Leveler Deployed": {
+                nextState: "LevelerEngaged_ReadyToLoad",
+                requires: { RESTRAINT: true, DOOR: true, LEVELER: false }
+            },
+            "Door Closed": {
+                nextState: "DoorClosed_Restrained",
+                requires: { RESTRAINT: true, DOOR: true, LEVELER: false }
+            }
+        },
+        "DoorClosed_Restrained": {
+            "Door Opened": {
+                nextState: "LoadingComplete_DoorOpen",
+                requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
+            },
+            "Vehicle Restraint Disengaged": {
+                nextState: "Cycle_Complete",
+                requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
+            }
         }
+    };
 
-    // (1 1 0)
-    else if (currentState === "Restrained_DoorClosed"
-            && previousState === "Bay_Available"
-            && sensType.RESTRAINT === true
-            && sensType.DOOR === false
-            && sensType.LEVELER === false
-            && ControllerAction === "Door Opened"
-        ) {
-            return "DoorOpen_LevelerClosed";
-        }
-
-    // (1 1 1)
-    else if (currentState === "DoorOpen_LevelerClosed"
-            && previousState === "Restrained_DoorClosed"
-            && sensType.RESTRAINT === true
-            && sensType.DOOR === true 
-            && sensType.LEVELER === false
-            && ControllerAction === "Dock Leveler Deployed"
-        ) {
-            return "LevelerEngaged_ReadyToLoad";
-        }
-
-    // (1 1 0)
-    else if (currentState === "LevelerEngaged_ReadyToLoad"
-            && previousState === "DoorOpen_LevelerClosed"
-            && sensType.RESTRAINT === true
-            && sensType.DOOR === true 
-            && sensType.LEVELER === true
-            && ControllerAction === "Dock Leveler Reset"
-        ) {
-            return "LoadingComplete_DoorOpen";
-        }
-
-    // (1 0 0)
-    else if (currentState === "LoadingComplete_DoorOpen"
-            && previousState === "LevelerEngaged_ReadyToLoad"
-            && sensType.RESTRAINT === true
-            && sensType.DOOR === true
-            && sensType.LEVELER === false
-            && ControllerAction === "Door Closed"
-        ) {
-            return "DoorClosed_Restrained";
-        }
-
-    // (0 0 0)
-    else if (currentState === "DoorClosed_Restrained"
-            && previousState === "LoadingComplete_DoorOpen"
-            && sensType.RESTRAINT === true
-            && sensType.DOOR === false
-            && sensType.LEVELER === false
-            && ControllerAction === "Vehicle Restraint Disengaged"
-        ) {
-            return "Cycle_Complete";
-        }
-    else{
-        return "Exception"
+    // Check if this state has valid transitions
+    const stateTransitions = reversibleTransitions[currentState];
+    if (!stateTransitions) {
+        return "Exception";
     }
+
+    // Check if this action is valid for current state
+    const transition = stateTransitions[ControllerAction];
+    if (!transition) {
+        return "Exception";
+    }
+
+    // Verify sensor requirements match
+    const requirementsMet = Object.entries(transition.requires).every(
+        ([sensorType, expectedState]) => sensType[sensorType] === expectedState
+    );
+
+    if (!requirementsMet) {
+        return "Exception";
+    }
+
+    return transition.nextState;
 }
 
 module.exports = { stateMachine };
