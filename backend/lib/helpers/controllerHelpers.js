@@ -66,17 +66,32 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
         }
     };
 
+    // Define idempotent actions - actions that can be repeated without changing state
+    const idempotentActions = {
+        "Bay_Available": ["Vehicle Restraint Disengaged"],
+        "DoorOpen_LevelerClosed": ["Door Opened"],
+        "Restrained_DoorClosed": ["Door Closed", "Vehicle Restraint Engaged"],
+        "LoadingComplete_DoorOpen": ["Door Opened"],
+        "DoorClosed_Restrained": ["Door Closed", "Vehicle Restraint Engaged"],
+        "LevelerEngaged_ReadyToLoad": ["Dock Leveler Deployed"],
+        "Cycle_Complete": ["Vehicle Restraint Disengaged"]
+    };
+
     // Check if this state has valid transitions
     const stateTransitions = reversibleTransitions[currentState];
-    if (!stateTransitions) {
+    
+    // If action is not in transitions, check if it's an idempotent action
+    if (!stateTransitions || !stateTransitions[ControllerAction]) {
+        // Check if this is a repeated action that should be idempotent
+        const allowedIdempotent = idempotentActions[currentState];
+        if (allowedIdempotent && allowedIdempotent.includes(ControllerAction)) {
+            return currentState; // Stay in same state
+        }
         return "Exception";
     }
 
     // Check if this action is valid for current state
     const transition = stateTransitions[ControllerAction];
-    if (!transition) {
-        return "Exception";
-    }
 
     // Verify sensor requirements match
     const requirementsMet = Object.entries(transition.requires).every(

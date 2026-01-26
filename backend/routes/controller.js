@@ -49,6 +49,17 @@ module.exports = async function (fastify, opts) {
             // call stateMachine function
             const nextState = stateMachine(dock.fsm_state, dock.last_valid_fsm_state, conditions, action);
 
+            // if repeat action or already in that new state
+            if (dock.fsm_state === nextState){
+                return reply.send({ 
+                    success: true,
+                    sensor_name: targetSensor.name,
+                    nextState: nextState,
+                    event: insertEvent,
+                    notes: "Equipment already in position"
+                });
+            }
+
             console.log("action: ", action);
             console.log("NExt State: ", nextState);
 
