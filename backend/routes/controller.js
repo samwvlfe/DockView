@@ -16,7 +16,7 @@ module.exports = async function (fastify, opts) {
             // Get dock data
             const { data: dock, error: dockError } = await fastify.supabase
                 .from("dock_bays")
-                .select("fsm_state, last_valid_fsm_state, active_cycle_id")
+                .select("name, fsm_state, last_valid_fsm_state, active_cycle_id")
                 .eq("id", dockId)
                 .single();
             
@@ -30,7 +30,7 @@ module.exports = async function (fastify, opts) {
             // get sensor CONDITIONS
             const { data: conditions, error: sensorsError } = await fastify.supabase
                 .from("sensors")
-                .select("id, sensor_type, sensor_state")
+                .select("id, sensor_type, name, sensor_state")
                 .eq("dock_bay_id", dockId);
             
             if (sensorsError) {
@@ -62,7 +62,7 @@ module.exports = async function (fastify, opts) {
             if(nextState !== "Exception"){
 
                 // flip state of the sensor that caused POST and update in DB
-                const flippedSensorState = !targetSensor.sensor_state;
+                flippedSensorState = !targetSensor.sensor_state;
                 const { data: updatedSensor, error: sensorUpdateErr } = await fastify.supabase
                 .from("sensors")
                 .update({
@@ -83,19 +83,6 @@ module.exports = async function (fastify, opts) {
                     ? { ...sensor, sensor_state: flippedSensorState }
                     : sensor
                 );
-
-                // broadcast update
-                broadcaster.broadcast({
-                    type: 'sensor_updated',
-                    payload: {
-                        dock_bay_id: dockId,
-                        sensor_id: sensorId,
-                        sensor_type: updatedSensor.sensor_type,
-                        sensor_state: flippedSensorState,
-                        action: action,
-                        timestamp: NOW
-                    }
-                });
                 
                 // No active cycle - create new one
                 if (!dock.active_cycle_id) {
@@ -108,7 +95,8 @@ module.exports = async function (fastify, opts) {
                         state_started_at: NOW,
                         meta: updatedConditions,
                         created_at: NOW,
-                        ended_at: nextState === "Cycle_Complete" ? NOW : null
+                        ended_at: nextState === "Cycle_Complete" ? NOW : null, 
+                        dock_name: dock.name
                     })
                     .select("*")
                     .single();
@@ -154,7 +142,8 @@ module.exports = async function (fastify, opts) {
                         sensor_state: flippedSensorState
                     },
                     cycle_id: activeCycleId,
-                    action: action
+                    action: action, 
+                    sensor_name: conditions.name
                 })
                 .select("*")
                 .single();
@@ -186,6 +175,24 @@ module.exports = async function (fastify, opts) {
             }
             // log exception and broadcast update
             else{
+                //log in exception table
+                const { data: exceptionInsert, error: exceptionInsertError} = await fastify.supabase
+                .from("exceptions")
+                .insert({
+                    sensor_name: conditions.name, 
+                    previous_state: dock.fsm_state,
+                    conditions: conditions,
+                    action: action
+                })
+                .select("*")
+                .single();
+                
+                if (exceptionInsertError) {
+                    console.error("Insert error: ", exceptionInsertError);
+                    return reply.code(500).send({ error: "Failed to insert exception data"});
+                }
+
+
                 // if active cycle, update to exception
                 if (dock.active_cycle_id) {
                     const { data: insertCycle, error: cycleError} = await fastify.supabase
@@ -195,7 +202,8 @@ module.exports = async function (fastify, opts) {
                         terminal_reason: action,
                         state_started_at: NOW,
                         meta: updatedConditions,
-                        ended_at: nextState === "Cycle_Complete" ? NOW : null
+                        ended_at: nextState === "Cycle_Complete" ? NOW : null,
+                        dock_name: dock.name
                     })
                     .eq("id", activeCycleId)
                     .select("*")
@@ -220,7 +228,8 @@ module.exports = async function (fastify, opts) {
                         sensor_state: nextState
                     },
                     cycle_id: activeCycleId,
-                    action: action
+                    action: action,
+                    sensor_name: conditions.name
                 })
                 .select("*")
                 .single();
@@ -261,6 +270,19 @@ module.exports = async function (fastify, opts) {
                     }
                 });
             }
+
+            // broadcast update
+            broadcaster.broadcast({
+                type: 'sensor_updated',
+                payload: {
+                    dock_bay_id: dockId,
+                    sensor_id: sensorId,
+                    sensor_type: updatedSensor.sensor_type,
+                    sensor_state: flippedSensorState === null ? updatedSensor.sensor_state : flippedSensorState,
+                    action: action,
+                    timestamp: NOW
+                }
+            });
 
             // POST return body
             return reply.send({ 
