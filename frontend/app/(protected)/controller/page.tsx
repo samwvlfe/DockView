@@ -121,6 +121,14 @@ export default function Controller() {
             if (!theDock) {
                 throw new Error("Dock not found");
             }
+                        
+            console.log("Sending dock to server:", {
+                id: theDock.id,
+                name: theDock.name,
+                active_cycle_id: theDock.active_cycle_id,
+                fsm_state: theDock.fsm_state
+            });
+            
             const result = await DockCycle(theDock, status);
             if(result){
                 setCurrState(result.new_state);
