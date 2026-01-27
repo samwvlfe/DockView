@@ -291,6 +291,8 @@ module.exports = async function (fastify, opts) {
             const oldFsm = theDock.fsm_state;
             let newFsm = oldFsm;
 
+            let activeCycleId = null;
+
             if ( status ){ // truck enters bay
                 newStatus = "occupied"
                 newFsm = "Truck_Present"
@@ -312,6 +314,7 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to start cycle" });
                 }
                 console.log("Newly created cycle id: ", cycleStart.id);
+                activeCycleId = cycleStart.id;
                 
                 // Update dock bay state to occupied
                 const { data: dock, error: dockError } = await fastify.supabase
@@ -322,7 +325,7 @@ module.exports = async function (fastify, opts) {
                     fsm_state_entered_at: NOW,
                     fsm_state: newFsm,
                     last_valid_fsm_state: oldFsm,
-                    active_cycle_id: cycleStart.id
+                    active_cycle_id: activeCycleId
                 })
                 .eq("id", theDock.id)
                 .select()
@@ -419,7 +422,7 @@ module.exports = async function (fastify, opts) {
                 success: true,
                 status: newStatus,
                 new_state: newFsm,
-                active_cycle_id: status ? cycleStart.id : null,
+                active_cycle_id: activeCycleId,
                 dock_bay_id: theDock.id
             });
 
