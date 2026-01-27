@@ -20,27 +20,26 @@ export default function DashboardPage() {
             const initDocks = await fetchDocks();
             setDocks(initDocks);
 
-
             // Open WS connection
             const ws = new WebSocket("wss://dockview.onrender.com/ws");
             ws.onopen = () => console.log("WebSocket connection established");
             // Handle incoming messages
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
-                // Dock status updates
+
                 if (msg.type === "dock_status_update") {
                     const payload = msg.payload;
-                    // Update the relevant dock's status
+                    // Update the relevant dock's status onMessage 
                     setDocks((prevDocks) =>
-                    prevDocks.map((dock: DockBay) =>
-                        dock.id === payload.dock_bay_id
-                        ? {
-                            ...dock,
-                            status: payload.new_status,
-                            status_changed_at: payload.status_changed_at
-                            }
-                        : dock
-                    )
+                        prevDocks.map((dock: DockBay) =>
+                            dock.id === payload.dock_bay_id
+                            ? {
+                                ...dock,
+                                status: payload.new_status,
+                                status_changed_at: payload.status_changed_at
+                                }
+                            : dock
+                        )
                     );
                 }
             };

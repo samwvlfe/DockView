@@ -3,24 +3,22 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     const sensors = Array.isArray(conditions) ? conditions : conditions ? [conditions] : [];
     const sensType = Object.fromEntries(sensors.map(s => [s.sensor_type, !!s.sensor_state]));
 
-    const newCycle = previousState == null || previousState === "Cycle_Complete";
-
     // Define reversible actions - these can happen without following strict sequence
     const reversibleTransitions = {
-        // Restraint can be engaged/disengaged from Bay_Available
-        "Bay_Available": {
+        // Restraint can be engaged/disengaged from Truck_Present
+        "Truck_Present": {
             "Vehicle Restraint Engaged": {
                 nextState: "Restrained_DoorClosed",
                 requires: { RESTRAINT: false, DOOR: false, LEVELER: false }
             },
             "Vehicle Restraint Disengaged": {
-                nextState: "Bay_Available", // stays same
+                nextState: "Truck_Present", // stays same
                 requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
             }
         },
         "Restrained_DoorClosed": {
             "Vehicle Restraint Disengaged": {
-                nextState: "Bay_Available",
+                nextState: "Truck_Present",
                 requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
             },
             "Door Opened": {
@@ -68,7 +66,7 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
 
     // Define idempotent actions - actions that can be repeated without changing state
     const idempotentActions = {
-        "Bay_Available": ["Vehicle Restraint Disengaged"],
+        "Truck_Present": ["Vehicle Restraint Disengaged"],
         "DoorOpen_LevelerClosed": ["Door Opened"],
         "Restrained_DoorClosed": ["Door Closed", "Vehicle Restraint Engaged"],
         "LoadingComplete_DoorOpen": ["Door Opened"],

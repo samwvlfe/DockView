@@ -308,30 +308,86 @@ module.exports = async function (fastify, opts) {
         try{
             const NOW = new Date().toISOString();
 
-            const { dockBay_Id } = request.body;
+            // json body incoming
+            const { theDock, status } = request.body;
             
-            if(!dockBay_Id){
+            if(!theDock || !status){
                 return reply.code(400).send({error: "Missing required fields"});
             }
 
-            // Update dock bay state to available
-            const { data: dock, error: dockError } = await fastify.supabase
+            const oldStatus = theDock.status;
+            let newStatus = oldStatus;
+
+            if ( status ){ // truck enters bay
+                newStatus = "occupied"
+
+                //start cycle
+                const { data: cycleStart, error: cycleStartError} = await fastify.supabase
+                .from("dock_cycles")
+                .insert({
+                    dock_name: theDock.name,
+                    terminal_state: "Start Cycle",
+                    state_started_at: NOW,
+                    created_at: NOW,
+                    dock_bay_id: theDock.id
+                })
+                .select()
+                .single();
+                if ( cycleStartError ){
+                    return reply.code(500).send({ error: "Failed to start cycle" });
+                }
+                
+                
+                // Update dock bay state to occupied
+                const { data: dock, error: dockError } = await fastify.supabase
                 .from("dock_bays")
                 .update({
+                    status: newStatus,
+                    status_changed_at: NOW,
                     fsm_state_entered_at: NOW,
-                    fsm_state: "Bay_Available",
-                    last_valid_fsm_state: "Cycle_Complete"
+                    fsm_state: "Truck_Present",
+                    last_valid_fsm_state: "Bay_Available",
+                    active_cycle_id: cycleStart.id
                 })
-                .eq("id", dockBay_Id)
-                .select("fsm_state")
+                .eq("id", theDock.id)
+                .select()
                 .single();
-            
-            if (dockError) {
-                return reply.code(500).send({ error: "Database Error", dockError });
+                if ( dockError ) {
+                    return reply.code(500).send({ error: "Database Error", dockError });
+                }
+
+                // Insert event into dock_bay_history
+                const { data: hist, error: histError} = await fastify.supabase
+                .from("dock_bay_history")
+                .insert({
+                    dock_bay_id: theDock.id,
+                    old_status: oldStatus,
+                    new_status: newStatus,
+                    reason: "Start Cycle",
+                    event_id: null,
+                    old_fsm_state: "Bay_Available",
+                    new_fsm_state: "Truck_Present"
+                })
+                .select()
+                .single();
+                if ( histError ){
+                    return reply.code(500).send({ error: "Failed to start cycle" });
+                }
+
+                // Broadcast status update to dashboard/page.tsx
+                broadcaster.broadcast({
+                    type: "dock_status_update",
+                    payload: {
+                        dock_bay_id: theDock.id,
+                        old_status: oldStatus,
+                        new_status: newStatus,
+                        event_type: "Start Cycle",
+                        status_changed_at: NOW
+                    }
+                });
+
             }
-            if (!dock) {
-                return reply.code(404).send({ error: "Dock not found" });
-            }
+
 
             // POST return body
             return reply.send({ 

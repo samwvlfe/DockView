@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import styles from "./controllerpage.module.css";
-import { fetchDocks, fetchSensorsByDockID, sendControllerAction, resetDockBay } from "@/lib/api";
+import { fetchDocks, fetchSensorsByDockID, sendControllerAction, DockCycle } from "@/lib/api";
 import { DockBay, Sensor } from "@/types/interfaces";
 
 export default function Controller() {
@@ -100,9 +100,13 @@ export default function Controller() {
         }
     }
 
-    async function resetBay() {
+    async function toggleStatus(status: boolean) {
         try{
-            const result = await resetDockBay(selectedUuid);
+            const theDock = docks.find(dock => dock.id === selectedUuid);
+            if (!theDock) {
+                throw new Error("Dock not found");
+            }
+            const result = await DockCycle(theDock, status);
             if(result){
                 setCurrState(result.resetState);
             }
@@ -115,6 +119,18 @@ export default function Controller() {
     return (
         <div className={`stack center gap20`}>
             <h1>Controller Test</h1>
+
+            <div>
+                <span>Start Load Cycle: </span>
+                <button
+                    type="button"
+                    disabled={!selectedUuid || !levelerSensorId}
+                    className="bayReadyBtn"
+                    onClick={() => toggleStatus(true)}
+                >
+                    Reset
+                </button>
+            </div>
 
             <div className={`${styles.selectCont} stack center`}>
 
@@ -210,12 +226,12 @@ export default function Controller() {
                 )}
             </div>
             <div>
-                <span>Reset Dock Bay: </span>
+                <span>Close Load Cycle: </span>
                 <button
                     type="button"
                     disabled={!selectedUuid || !levelerSensorId}
                     className="bayReadyBtn"
-                    onClick={() => resetBay()}
+                    onClick={() => toggleStatus(false)}
                 >
                     Reset
                 </button>

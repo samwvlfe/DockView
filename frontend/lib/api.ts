@@ -1,5 +1,5 @@
 // FUNCTIONS that call the routes defined in backend/routes/*
-import { AvgTurnoverResponse } from "@/types/interfaces";
+import { AvgTurnoverResponse, DockBay } from "@/types/interfaces";
 
 //eventually make baseURL an .env variable
 const baseURL = "https://dockview.onrender.com";
@@ -84,11 +84,11 @@ export async function sendControllerAction(dockId: string, sensorId: string, act
 }
 
 // POST reset dock bay after "Cycle_Complete" to "Bay_Available"
-export async function resetDockBay(dockBay_Id: string | null) {
+export async function DockCycle(theDock: DockBay, status: boolean) {
   const res = await fetch(`${baseURL}/controller/reset`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ dockBay_Id }),
+    body: JSON.stringify({ theDock, status }),
   });
 
   if(!res.ok){
