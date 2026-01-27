@@ -3,16 +3,14 @@ function stateMachine(currentState, previousState, conditions, ControllerAction)
     const sensors = Array.isArray(conditions) ? conditions : conditions ? [conditions] : [];
     const sensType = Object.fromEntries(sensors.map(s => [s.sensor_type, !!s.sensor_state]));
 
-    // Define reversible actions - these can happen without following strict sequence
     const reversibleTransitions = {
-        // Restraint can be engaged/disengaged from Truck_Present
         "Truck_Present": {
             "Vehicle Restraint Engaged": {
                 nextState: "Restrained_DoorClosed",
                 requires: { RESTRAINT: false, DOOR: false, LEVELER: false }
             },
             "Vehicle Restraint Disengaged": {
-                nextState: "Truck_Present", // stays same
+                nextState: "Truck_Present",
                 requires: { RESTRAINT: true, DOOR: false, LEVELER: false }
             }
         },

@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
             <InfoContainer 
                 docks={docks} 
-                selectedWidgets={["utilization", "loadsCompleted", "turnover"]}
+                selectedWidgets={["utilization", "loadsCompleted"]}
                 selectedDockID={selectedDockID}
                 />
             </div>

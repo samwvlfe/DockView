@@ -304,6 +304,7 @@ module.exports = async function (fastify, opts) {
         }
     });
 
+    // Start cycle or End cycle
     fastify.post("/controller/reset", async (request, reply) => {
         try{
             const NOW = new Date().toISOString();
@@ -318,15 +319,20 @@ module.exports = async function (fastify, opts) {
             const oldStatus = theDock.status;
             let newStatus = oldStatus;
 
+            const oldFsm = theDock.fsm_state;
+            let newFsm = oldFsm;
+
             if ( status ){ // truck enters bay
                 newStatus = "occupied"
+                newFsm = "Truck_Present"
 
                 //start cycle
                 const { data: cycleStart, error: cycleStartError} = await fastify.supabase
                 .from("dock_cycles")
                 .insert({
                     dock_name: theDock.name,
-                    terminal_state: "Start Cycle",
+                    terminal_state: newFsm,
+                    terminal_reason: "Truck Entered, Start Cycle",
                     state_started_at: NOW,
                     created_at: NOW,
                     dock_bay_id: theDock.id
@@ -337,7 +343,6 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to start cycle" });
                 }
                 
-                
                 // Update dock bay state to occupied
                 const { data: dock, error: dockError } = await fastify.supabase
                 .from("dock_bays")
@@ -345,8 +350,8 @@ module.exports = async function (fastify, opts) {
                     status: newStatus,
                     status_changed_at: NOW,
                     fsm_state_entered_at: NOW,
-                    fsm_state: "Truck_Present",
-                    last_valid_fsm_state: "Bay_Available",
+                    fsm_state: newFsm,
+                    last_valid_fsm_state: oldFsm,
                     active_cycle_id: cycleStart.id
                 })
                 .eq("id", theDock.id)
@@ -354,24 +359,6 @@ module.exports = async function (fastify, opts) {
                 .single();
                 if ( dockError ) {
                     return reply.code(500).send({ error: "Database Error", dockError });
-                }
-
-                // Insert event into dock_bay_history
-                const { data: hist, error: histError} = await fastify.supabase
-                .from("dock_bay_history")
-                .insert({
-                    dock_bay_id: theDock.id,
-                    old_status: oldStatus,
-                    new_status: newStatus,
-                    reason: "Start Cycle",
-                    event_id: null,
-                    old_fsm_state: "Bay_Available",
-                    new_fsm_state: "Truck_Present"
-                })
-                .select()
-                .single();
-                if ( histError ){
-                    return reply.code(500).send({ error: "Failed to start cycle" });
                 }
 
                 // Broadcast status update to dashboard/page.tsx
@@ -385,14 +372,80 @@ module.exports = async function (fastify, opts) {
                         status_changed_at: NOW
                     }
                 });
+            }
+            //truck leaves Bay
+            else{
+                let newStatus = "idle";
+                newFsm = "Cycle_Complete";
 
+                // end cycle
+                const { data: cycleEnd, error: cycleEndError} = await fastify.supabase
+                .from("dock_cycles")
+                .insert({
+                    terminal_state: newFsm,
+                    terminal_reason: "Truck Left Bay - End Cycle",
+                    state_started_at: NOW,
+                    ended_at: NOW
+                })
+                .select()
+                .single();
+                if ( cycleEndError ){
+                    return reply.code(500).send({ error: "Failed to start cycle" });
+                }
+
+                // Update dock bay state to idle
+                const { data: dock, error: dockError } = await fastify.supabase
+                .from("dock_bays")
+                .update({
+                    status: newStatus,
+                    status_changed_at: NOW,
+                    fsm_state_entered_at: NOW,
+                    fsm_state: newFsm,
+                    last_valid_fsm_state: oldFsm,
+                    conditions: null,
+                    active_cycle_id: null
+                })
+                .eq("id", theDock.id)
+                .select()
+                .single();
+                if ( dockError ) {
+                    return reply.code(500).send({ error: "Database Error", dockError });
+                }
+
+                // Broadcast load complete to widget
+                broadcaster.broadcast({
+                    type: "load_completed",
+                    payload: {
+                        dock_bay_id: theDock.id,
+                        completed_at: NOW
+                    }
+                });
+            }
+
+            // Insert event into dock_bay_history
+            const { data: hist, error: histError} = await fastify.supabase
+            .from("dock_bay_history")
+            .insert({
+                dock_bay_id: theDock.id,
+                old_status: oldStatus,
+                new_status: newStatus,
+                reason: newStatus === "occupied" ? "Truck Entered, Start Cycle" : "Truck Left Bay, End Cycle",
+                event_id: null,
+                old_fsm_state: oldFsm,
+                new_fsm_state: newStatus === "occupied" ? "Bay_Available" : "Cycle_Complete"
+            })
+            .select()
+            .single();
+            if ( histError ){
+                return reply.code(500).send({ error: "Failed to start cycle" });
             }
 
 
             // POST return body
             return reply.send({ 
                 success: true,
-                resetState: "Bay_Available"
+                status: newStatus,
+                new_state: newFsm
             });
 
         } catch (err) {

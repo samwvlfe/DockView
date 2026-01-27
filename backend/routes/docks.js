@@ -46,7 +46,7 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
-    // GET Dock Bay loads completed today
+    // GET Dock Bay loads completed today - Move to cycles 
     fastify.get("/stats/loadsCompleted", async () => {
         const { data, error } = await fastify.supabase
             .from("dock_bay_history")
