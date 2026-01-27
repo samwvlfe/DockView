@@ -129,16 +129,6 @@ export default function Controller() {
         <div className={`stack center gap20`}>
             <h1>Controller Test</h1>
 
-            <div>
-                <span>Start Load Cycle: </span>
-                <button
-                    type="button"
-                    disabled={!selectedUuid || !levelerSensorId}
-                    className={styles.bayReadyBtn}
-                    onClick={() => toggleStatus(true)}
-                    >START</button>
-            </div>
-
             <div className={`${styles.selectCont} stack center`}>
 
                 <label htmlFor="dock">Select dock</label>
@@ -160,6 +150,16 @@ export default function Controller() {
                     ))}
                 </select>
 
+            </div>
+            
+            <div>
+                <span>Start Load Cycle: </span>
+                <button
+                    type="button"
+                    disabled={!selectedUuid || !levelerSensorId}
+                    className={styles.bayReadyBtn}
+                    onClick={() => toggleStatus(true)}
+                    >START</button>
             </div>
 
             <div className="row center gap20">
