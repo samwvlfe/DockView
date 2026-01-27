@@ -125,10 +125,10 @@ export default function Controller() {
                 <button
                     type="button"
                     disabled={!selectedUuid || !levelerSensorId}
-                    className="bayReadyBtn"
+                    className={styles.bayReadyBtn}
                     onClick={() => toggleStatus(true)}
                 >
-                    Reset
+                    START
                 </button>
             </div>
 
@@ -230,10 +230,10 @@ export default function Controller() {
                 <button
                     type="button"
                     disabled={!selectedUuid || !levelerSensorId}
-                    className="bayReadyBtn"
+                    className={styles.bayReadyBtn}
                     onClick={() => toggleStatus(false)}
                 >
-                    Reset
+                    END
                 </button>
             </div>
         </div>

@@ -315,7 +315,7 @@ module.exports = async function (fastify, opts) {
             console.log(theDock);
             console.log(status);
             
-            if(!theDock || !status){
+            if(!theDock || status === undefined){
                 return reply.code(400).send({error: "Missing required fields"});
             }
 
@@ -378,18 +378,21 @@ module.exports = async function (fastify, opts) {
             }
             //truck leaves Bay
             else{
-                let newStatus = "idle";
+                newStatus = "idle";
                 newFsm = "Cycle_Complete";
 
                 // end cycle
+                if (!theDock.active_cycle_id) {
+                    return reply.code(400).send({ error: "No active cycle to end" });
+                }
                 const { data: cycleEnd, error: cycleEndError} = await fastify.supabase
                 .from("dock_cycles")
-                .insert({
+                .update({
                     terminal_state: newFsm,
-                    terminal_reason: "Truck Left Bay - End Cycle",
-                    state_started_at: NOW,
+                    terminal_reason: "Truck Left Bay, End Cycle",
                     ended_at: NOW
                 })
+                .eq("id", theDock.active_cycle_id)
                 .select()
                 .single();
                 if ( cycleEndError ){
@@ -435,12 +438,12 @@ module.exports = async function (fastify, opts) {
                 reason: newStatus === "occupied" ? "Truck Entered, Start Cycle" : "Truck Left Bay, End Cycle",
                 event_id: null,
                 old_fsm_state: oldFsm,
-                new_fsm_state: newStatus === "occupied" ? "Bay_Available" : "Cycle_Complete"
+                new_fsm_state: newFsm
             })
             .select()
             .single();
             if ( histError ){
-                return reply.code(500).send({ error: "Failed to start cycle" });
+                return reply.code(500).send({ error: "Failed to insert history", histError });
             }
 
 
