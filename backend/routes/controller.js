@@ -366,7 +366,7 @@ module.exports = async function (fastify, opts) {
                 .select()
                 .single();
                 if ( cycleEndError ){
-                    return reply.code(500).send({ error: "Failed to start cycle" });
+                    return reply.code(500).send({ error: "Failed to end cycle" });
                 }
 
                 // Update dock bay state to idle
@@ -398,6 +398,8 @@ module.exports = async function (fastify, opts) {
                 });
             }
 
+            activeCycleId = null;
+            
             // Insert event into dock_bay_history
             const { data: hist, error: histError} = await fastify.supabase
             .from("dock_bay_history")

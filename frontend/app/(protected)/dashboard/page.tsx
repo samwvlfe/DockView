@@ -29,6 +29,7 @@ export default function DashboardPage() {
 
                 if (msg.type === "dock_status_update") {
                     const payload = msg.payload;
+                    console.log("dock_status_update payload: ", payload);
                     // Update the relevant dock's status onMessage 
                     setDocks((prevDocks) =>
                         prevDocks.map((dock: DockBay) =>
@@ -37,22 +38,6 @@ export default function DashboardPage() {
                                 ...dock,
                                 status: payload.new_status,
                                 status_changed_at: payload.status_changed_at
-                                }
-                            : dock
-                        )
-                    );
-                }
-
-                // Listen for cycle updates (START/END button actions)
-                if (msg.type === "dock_cycle_updated") {
-                    const payload = msg.payload;
-                    setDocks((prevDocks) =>
-                        prevDocks.map((dock: DockBay) =>
-                            dock.id === payload.dock_bay_id
-                            ? {
-                                ...dock,
-                                active_cycle_id: payload.active_cycle_id,
-                                fsm_state: payload.fsm_state
                                 }
                             : dock
                         )

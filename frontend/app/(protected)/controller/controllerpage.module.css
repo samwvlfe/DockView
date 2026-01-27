@@ -34,6 +34,9 @@
     border-radius: 5px;
     background-color: #be4e30;
 }
-.bayReadyBtn button:active{
+.bayReadyBtn:hover{
+    cursor: pointer;
+}
+.bayReadyBtn:active{
     transform: translateY(2px);
 }
