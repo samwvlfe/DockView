@@ -42,6 +42,22 @@ export default function DashboardPage() {
                         )
                     );
                 }
+
+                // Listen for cycle updates (START/END button actions)
+                if (msg.type === "dock_cycle_updated") {
+                    const payload = msg.payload;
+                    setDocks((prevDocks) =>
+                        prevDocks.map((dock: DockBay) =>
+                            dock.id === payload.dock_bay_id
+                            ? {
+                                ...dock,
+                                active_cycle_id: payload.active_cycle_id,
+                                fsm_state: payload.fsm_state
+                                }
+                            : dock
+                        )
+                    );
+                }
             };
         };
     initializeData();
