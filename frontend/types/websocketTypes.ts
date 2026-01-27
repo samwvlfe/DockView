@@ -5,6 +5,7 @@ export type DockStatusUpdatePayload = {
   new_status: string;
   event_type: string;
   status_changed_at: string;
+  active_cycle_id : string;
 };
 export interface DockStatusUpdateMessage {
   type: "dock_status_update";

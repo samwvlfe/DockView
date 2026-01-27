@@ -1,4 +1,5 @@
 //Controller Actions
+const { act } = require("react");
 const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
 
@@ -334,7 +335,7 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Database Error", dockError });
                 }
 
-                // Broadcast status update to dashboard/page.tsx
+                // Broadcast status update to dock opened
                 broadcaster.broadcast({
                     type: "dock_status_update",
                     payload: {
@@ -342,12 +343,14 @@ module.exports = async function (fastify, opts) {
                         old_status: oldStatus,
                         new_status: newStatus,
                         event_type: "Start Cycle",
-                        status_changed_at: NOW
+                        status_changed_at: NOW, 
+                        active_cycle_id: activeCycleId
                     }
                 });
             }
             //truck leaves Bay
             else{
+                activeCycleId = null;
                 newStatus = "idle";
                 newFsm = "Cycle_Complete";
 
@@ -379,7 +382,7 @@ module.exports = async function (fastify, opts) {
                     fsm_state: newFsm,
                     last_valid_fsm_state: oldFsm,
                     conditions: null,
-                    active_cycle_id: null
+                    active_cycle_id: activeCycleId
                 })
                 .eq("id", theDock.id)
                 .select()
@@ -387,6 +390,20 @@ module.exports = async function (fastify, opts) {
                 if ( dockError ) {
                     return reply.code(500).send({ error: "Database Error", dockError });
                 }
+
+                // Broadcast status update dock closed 
+                broadcaster.broadcast({
+                    type: "dock_status_update",
+                    payload: {
+                        dock_bay_id: theDock.id,
+                        old_status: oldStatus,
+                        new_status: newStatus,
+                        event_type: "Start Cycle",
+                        status_changed_at: NOW,
+                        // pass this to dashboard/page.tsx to update status to closed
+                        active_cycle_id: theDock.active_cycle_id
+                    }
+                });
 
                 // Broadcast load complete to widget
                 broadcaster.broadcast({
@@ -397,8 +414,6 @@ module.exports = async function (fastify, opts) {
                     }
                 });
             }
-
-            activeCycleId = null;
             
             // Insert event into dock_bay_history
             const { data: hist, error: histError} = await fastify.supabase

@@ -58,7 +58,7 @@ export default function Controller() {
         setCurrState(selectedState);
     }, [selectedState]);
 
-    // change state automatically via websocket from controller.js
+    // change state/status automatically via websocket from controller.js
     useEffect(() => {
         if (!selectedUuid) return;
 
@@ -67,8 +67,23 @@ export default function Controller() {
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
 
+            //listen for sensor updates
             if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {
             setCurrState(msg.payload.new_fsm_state);
+            }
+            //listen for status updates to get active dock cycle id for reset
+            if (msg.type === "dock_cycle_updated") {
+                setDocks(prevDocks =>
+                    prevDocks.map(d =>
+                        d.id === msg.payload.dock_bay_id
+                            ? {
+                                ...d,
+                                active_cycle_id: msg.payload.active_cycle_id,
+                                fsm_state: msg.payload.fsm_state
+                            }
+                            : d
+                    )
+                );
             }
         };
 
