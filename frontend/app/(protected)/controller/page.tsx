@@ -108,7 +108,7 @@ export default function Controller() {
             }
             const result = await DockCycle(theDock, status);
             if(result){
-                setCurrState(result.resetState);
+                setCurrState(result.new_state);
             }
         } catch (e) {
             console.error("action failed:", e);

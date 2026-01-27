@@ -311,6 +311,9 @@ module.exports = async function (fastify, opts) {
 
             // json body incoming
             const { theDock, status } = request.body;
+
+            console.log(theDock);
+            console.log(status);
             
             if(!theDock || !status){
                 return reply.code(400).send({error: "Missing required fields"});
