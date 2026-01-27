@@ -109,6 +109,15 @@ export default function Controller() {
             const result = await DockCycle(theDock, status);
             if(result){
                 setCurrState(result.new_state);
+
+                //update dock with return
+                setDocks(prevDocks => 
+                    prevDocks.map(d => 
+                        d.id === result.dock_bay_id 
+                            ? { ...d, active_cycle_id: result.active_cycle_id, fsm_state: result.new_state }
+                            : d
+                    )
+                );
             }
         } catch (e) {
             console.error("action failed:", e);
@@ -127,9 +136,7 @@ export default function Controller() {
                     disabled={!selectedUuid || !levelerSensorId}
                     className={styles.bayReadyBtn}
                     onClick={() => toggleStatus(true)}
-                >
-                    START
-                </button>
+                    >START</button>
             </div>
 
             <div className={`${styles.selectCont} stack center`}>
@@ -232,9 +239,7 @@ export default function Controller() {
                     disabled={!selectedUuid || !levelerSensorId}
                     className={styles.bayReadyBtn}
                     onClick={() => toggleStatus(false)}
-                >
-                    END
-                </button>
+                    >END</button>
             </div>
         </div>
     );

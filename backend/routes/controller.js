@@ -60,9 +60,6 @@ module.exports = async function (fastify, opts) {
                 });
             }
 
-            console.log("action: ", action);
-            console.log("NExt State: ", nextState);
-
             let updatedConditions = conditions;
             let cycleData = null;
             let activeCycleId = dock.active_cycle_id ?? null;
@@ -99,52 +96,24 @@ module.exports = async function (fastify, opts) {
                     : sensor
                 );
                 
-                // No active cycle - create new one
-                if (!dock.active_cycle_id) {
-                    const { data: insertCycle, error: cycleError} = await fastify.supabase
-                    .from("dock_cycles")
-                    .insert({
-                        dock_bay_id: dockId,
-                        terminal_state: nextState,
-                        terminal_reason: action,
-                        state_started_at: NOW,
-                        meta: updatedConditions,
-                        created_at: NOW,
-                        ended_at: nextState === "Cycle_Complete" ? NOW : null, 
-                        dock_name: dock.name
-                    })
-                    .select("*")
-                    .single();
-                    
-                    if (cycleError) {
-                        console.error("Insert error: ", cycleError);
-                        return reply.code(500).send({ error: "Failed to insert cycle data"});
-                    }
-                    cycleData = insertCycle;
-                    activeCycleId = insertCycle.id;
-                } 
-                // Active cycle exists - update it
-                else {
-                    const { data: updateCycle, error: cycleUpdateError} = await fastify.supabase
-                    .from("dock_cycles")
-                    .update({
-                        terminal_state: nextState,
-                        terminal_reason: action,
-                        state_started_at: NOW,
-                        meta: updatedConditions,
-                        ended_at: nextState === "Cycle_Complete" ? NOW : null
-                    })
-                    .eq("id", dock.active_cycle_id)
-                    .select("*")
-                    .single();
-                    
-                    if (cycleUpdateError) {
-                        console.error("Update error: ", cycleUpdateError);
-                        return reply.code(500).send({ error: "Failed to update cycle"});
-                    }
-                    cycleData = updateCycle;
-                    activeCycleId = dock.active_cycle_id;
+                // update dock cycle
+                const { data: updateCycle, error: cycleUpdateError} = await fastify.supabase
+                .from("dock_cycles")
+                .update({
+                    terminal_state: nextState,
+                    terminal_reason: action,
+                    state_started_at: NOW,
+                    meta: updatedConditions
+                })
+                .eq("id", dock.active_cycle_id)
+                .select("*")
+                .single();
+                if (cycleUpdateError) {
+                    console.error("Update error: ", cycleUpdateError);
+                    return reply.code(500).send({ error: "Failed to update cycle"});
                 }
+                cycleData = updateCycle;
+                activeCycleId = dock.active_cycle_id;
                 
                 // insert data into sensor_events
                 const { data: insertEvent, error: eventError} = await fastify.supabase
@@ -176,7 +145,7 @@ module.exports = async function (fastify, opts) {
                     last_valid_fsm_state: dock.fsm_state,
                     conditions: updatedConditions,
                     fsm_state_entered_at: NOW,
-                    active_cycle_id: nextState === "Cycle_Complete" ? null : activeCycleId
+                    active_cycle_id: activeCycleId
                 })
                 .eq("id", dockId)
                 .select("*")
@@ -311,9 +280,6 @@ module.exports = async function (fastify, opts) {
 
             // json body incoming
             const { theDock, status } = request.body;
-
-            console.log(theDock);
-            console.log(status);
             
             if(!theDock || status === undefined){
                 return reply.code(400).send({error: "Missing required fields"});
@@ -345,6 +311,7 @@ module.exports = async function (fastify, opts) {
                 if ( cycleStartError ){
                     return reply.code(500).send({ error: "Failed to start cycle" });
                 }
+                console.log("Newly created cycle id: ", cycleStart.id);
                 
                 // Update dock bay state to occupied
                 const { data: dock, error: dockError } = await fastify.supabase
@@ -451,7 +418,9 @@ module.exports = async function (fastify, opts) {
             return reply.send({ 
                 success: true,
                 status: newStatus,
-                new_state: newFsm
+                new_state: newFsm,
+                active_cycle_id: status ? cycleStart.id : null,
+                dock_bay_id: theDock.id
             });
 
         } catch (err) {
