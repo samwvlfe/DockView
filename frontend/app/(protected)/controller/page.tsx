@@ -67,12 +67,20 @@ export default function Controller() {
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
 
-            //listen for sensor updates
+            //listen for sensor updates, update currstate and docks array
             if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {
-            setCurrState(msg.payload.new_fsm_state);
+                setCurrState(msg.payload.new_fsm_state);
+                setDocks(prevDocks =>
+                    prevDocks.map(d =>
+                        d.id === selectedUuid
+                            ? { ...d, fsm_state: msg.payload.new_fsm_state }
+                            : d
+                    )
+                );
             }
             //listen for status updates to get active dock cycle id for reset
             if (msg.type === "dock_cycle_updated") {
+                setCurrState(msg.payload.fsm_state);
                 setDocks(prevDocks =>
                     prevDocks.map(d =>
                         d.id === msg.payload.dock_bay_id
@@ -146,7 +154,6 @@ export default function Controller() {
             console.error("action failed:", e);
         }
     }
-
 
     return (
         <div className={`stack center gap20`}>
@@ -262,7 +269,7 @@ export default function Controller() {
             </div>
 
             {/* End Cycle Button - only shown when Cycle_Complete */}
-            {selectedDock?.fsm_state ==="Cycle_Complete" && (
+            {selectedDock?.fsm_state === "Cycle_Complete" && (
                 <div>
                     <span>Close Load Cycle: </span>
                     <button
