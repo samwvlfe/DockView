@@ -1,16 +1,11 @@
 .bay{
     width: 16vw;
     min-width: 200px;
+    padding: 5px 10px;
   }
   .bay:hover{
     box-shadow: 0 0 12px rgb(61, 68, 81, .8);
     cursor: pointer;
-  }
-  .activeBorder{
-    border: 1px solid #108663;
-  }
-  .bay.activeBorder:hover{
-    box-shadow: 0 0 12px rgba(16, 134, 99, 0.65);
   }
   .bayName{
     font-size: 15px;
@@ -21,7 +16,7 @@
   }
   .openTime{
     font-size: 14px;
-    color: #108663;
+    color: var(--on);
   }
   .hist{
     margin: 0 0 0 auto;
@@ -32,7 +27,6 @@
   }
   .sensorCont{
     width: 50%;
-
   }
   .sensStatus{
     width: 10px;
@@ -40,5 +34,5 @@
     border-radius: 5px;
   }
   .sensName{
-    font-size: 11px;;
+    font-size: 11px;
   }

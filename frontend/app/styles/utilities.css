@@ -22,7 +22,7 @@
     align-items: center;
 }
 .active-font{
-    color: #108663;
+    color: var(--on);
 }
 .inactive-font{
     color: #9da0a4 !important
@@ -30,13 +30,35 @@
 .bold{
     font-weight: bold;
 }
-.selected{
-    border: 1px solid #b89a2e !important;
-}
 
 .sensorColActive{
-    background-color: #108663;
+    background-color: var(--on);
 }
 .sensorColInactive{
     background-color: red;
+}
+
+.orgColor{
+  color: var(--ds_orange);
+}
+
+.loading_DockCard{
+    border: 1px solid var(--on) !important;
+}
+.loading_DockCard:hover {
+    box-shadow: 0 0 12px rgba(16, 134, 99, 0.65);
+}
+.active_DockCard{
+    border: 1px solid var(--ds_orange) !important;
+}
+.active_DockCard:hover{
+    box-shadow: 0 0 12px rgba(190, 78, 48, 0.65);
+}
+
+.activeCardShow{
+    padding: 10px 0 0 0;
+    display: block;
+}
+.activeCardHide{
+    display: none;
 }

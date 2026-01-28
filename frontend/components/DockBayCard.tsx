@@ -4,31 +4,40 @@ import styles from "./DockBayCard.module.css";
 import Sensors from "@/components/Sensors";
 import { Sensor } from "@/types/interfaces";
 import { fetchSensorsByDockID } from "@/lib/api";
+import { dockCardClass } from "@/lib/helpers/ClassSetter"
 
 interface DockBayCardProps {
   id: string;
-  friendly_id: number;
   name: string;
   status: string;
+  fsm_state: string;
   status_changed_at?: string;
   onClick: () => void;
   isSelected: boolean;
 }
 
-export default function DockBayCard({ id, friendly_id, name, status, status_changed_at, onClick, isSelected}: DockBayCardProps) {
+export default function DockBayCard({ id, name, status, fsm_state, status_changed_at, onClick, isSelected}: DockBayCardProps) {
   const [elapsed, setElapsed] = useState("00:00:00");
   const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [classes, setClasses] = useState("");
 
-  // Timer effect (unchanged)
+  // Classes effect
   useEffect(() => {
+    console.log(dockCardClass(status, fsm_state));
+    setClasses(dockCardClass(status, fsm_state) || "");
+  }, [status, fsm_state]);
 
-    // Initial fetch of sensors for this dock bay
+  // Fetch sensors effect
+  useEffect(() => {
     const initData = async () => {
       const initSensors = await fetchSensorsByDockID(id);
       setSensors(initSensors);
     };
     initData();
+  }, [id]);
 
+  // Timer effect
+  useEffect(() => {
     if (status !== 'occupied' || !status_changed_at) {
       setElapsed("closed");
       return;
@@ -56,29 +65,34 @@ export default function DockBayCard({ id, friendly_id, name, status, status_chan
     return () => clearInterval(interval);
   }, [status, status_changed_at]);
 
-
-
   return (
     <div 
       className={`
         nested-widget
-        row apart
+        stack
         ${styles.bay} 
-        ${status === 'occupied' ? styles.activeBorder : ''}
-        ${isSelected ? 'selected' : ''}
+        ${classes}
       `}
       onClick={onClick}
     >
-      <div className="stack gap5">
-        <div className={styles.bayName}>{name}</div>
-        <div className={styles.bayStatus}>
-            <div className={`${styles.openTime} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
-                {elapsed}
-            </div>
+      <div className="row apart">
+        <div className="stack gap5">
+          <div className={styles.bayName}>{name}</div>
+          <div className={styles.bayStatus}>
+              <div className={`${styles.openTime} ${status === 'occupied' ? 'active-font' : 'inactive-font'}`}>
+                  {elapsed}
+              </div>
+          </div>
         </div>
-      </div>
 
-      <Sensors dock_bay={id} sensors={sensors} />
+        <Sensors dock_bay={id} sensors={sensors} />
+      </div>
+      {/* <div className={`
+          ${status === "occupied" ? "activeCardShow" : "activeCardHide"}
+          row center
+        `}>
+          <div>State: {fsm_state}</div>
+      </div> */}
     </div>
   );
 }

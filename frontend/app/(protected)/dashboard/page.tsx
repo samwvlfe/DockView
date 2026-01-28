@@ -43,6 +43,21 @@ export default function DashboardPage() {
                         )
                     );
                 }
+                // Listen for FSM state updates (sensor actions)
+                if (msg.type === "sensor_updated") {
+                    const payload = msg.payload;
+                    console.log("sensor_updated payload: ", payload);
+                    setDocks((prevDocks) =>
+                        prevDocks.map((dock: DockBay) =>
+                            dock.id === payload.dock_bay_id
+                            ? {
+                                ...dock,
+                                fsm_state: payload.new_fsm_state
+                                }
+                            : dock
+                        )
+                    );
+                }
             };
         };
     initializeData();

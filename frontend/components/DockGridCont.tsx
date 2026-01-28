@@ -37,9 +37,9 @@ export default function DockGridCont({ docks, onSelectDock, selectedDockId }: Do
                         <DockBayCard
                             key={dock.id}
                             id={dock.id}
-                            friendly_id={dock.friendly_id}
                             name={dock.name}
                             status={dock.status}
+                            fsm_state={dock.fsm_state ?? ""}
                             status_changed_at={dock.status_changed_at}
                             onClick={() => onSelectDock(dock.id)}
                             isSelected={dock.id === selectedDockId}

@@ -10,6 +10,7 @@
   --widget-bkg: #151c27;
   --radius: 10px;
   --padd: 20px;
+  --on: #108663;
 }
 
 body{
@@ -23,8 +24,4 @@ main{
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.orgColor{
-  color: var(--ds_orange);
 }
