@@ -176,13 +176,17 @@ export default function Controller() {
             </div>
             
             <div>
-                <span>Start Load Cycle: </span>
-                <button
-                    type="button"
-                    disabled={!selectedUuid || !levelerSensorId}
-                    className={styles.bayReadyBtn}
-                    onClick={() => toggleStatus(true)}
-                    >START</button>
+                {selectedDock?.fsm_state === "Bay_Available"}(
+                    <span>Start Load Cycle: </span>
+                    <button
+                        type="button"
+                        disabled={!selectedUuid || !levelerSensorId}
+                        className={styles.bayReadyBtn}
+                        onClick={() => toggleStatus(true)}
+                    >
+                        START
+                    </button>
+                )
             </div>
 
             <div className="row center gap20">
@@ -256,13 +260,18 @@ export default function Controller() {
                 )}
             </div>
             <div>
-                <span>Close Load Cycle: </span>
-                <button
-                    type="button"
-                    disabled={!selectedUuid || !levelerSensorId}
-                    className={styles.bayReadyBtn}
-                    onClick={() => toggleStatus(false)}
-                    >END</button>
+                {selectedDock?.fsm_state ==="Cycle_Complete"}(
+                    <span>Close Load Cycle: </span>
+                    <button
+                        type="button"
+                        disabled={!selectedUuid || !levelerSensorId}
+                        className={styles.bayReadyBtn}
+                        onClick={() => toggleStatus(false)}
+                    >
+                        END
+                    </button>
+
+                )
             </div>
         </div>
     );

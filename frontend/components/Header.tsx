@@ -1,10 +1,9 @@
 "use client";
 import styles from "./Header.module.css";
 import Image from "next/image";
-import dockstarLogo from "@/public/dockstar-xmas-logo.png";
+import dockstarLogo from "@/public/dockstarlogo.png";
 
 import Link from "next/link";
-import { DockTurnoverPayload } from '../types/websocketTypes';
 
 export default function Header() {
   return (

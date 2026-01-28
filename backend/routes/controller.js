@@ -351,7 +351,7 @@ module.exports = async function (fastify, opts) {
             else{
                 activeCycleId = null;
                 newStatus = "idle";
-                newFsm = "Cycle_Complete";
+                newFsm = "Bay_Available";
 
                 // end cycle
                 if (!theDock.active_cycle_id) {
@@ -397,7 +397,7 @@ module.exports = async function (fastify, opts) {
                         dock_bay_id: theDock.id,
                         old_status: oldStatus,
                         new_status: newStatus,
-                        event_type: "Start Cycle",
+                        event_type: "End Cycle",
                         status_changed_at: NOW,
                         // pass this to dashboard/page.tsx to update status to closed
                         active_cycle_id: theDock.active_cycle_id
