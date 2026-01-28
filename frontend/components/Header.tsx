@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function Header() {
   return (
     <div className={`${styles.menu} apart`}>
-        <div className="row center">
+        <div className="row center gap20">
           <Image
               className={styles.logo}
               src={dockstarLogo}

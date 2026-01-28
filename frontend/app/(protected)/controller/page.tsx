@@ -175,8 +175,9 @@ export default function Controller() {
 
             </div>
             
-            <div>
-                {selectedDock?.fsm_state === "Bay_Available"}(
+            {/* Start cycle button - only show when Bay_Available */}
+            {selectedDock?.fsm_state === "Bay_Available" && (
+                <div>
                     <span>Start Load Cycle: </span>
                     <button
                         type="button"
@@ -186,11 +187,11 @@ export default function Controller() {
                     >
                         START
                     </button>
-                )
-            </div>
+                </div>
+            )}
 
+            {/* Fake Sensor Data Buttons */}
             <div className="row center gap20">
-
                 <div className={`${styles.buttonCont} stack gap20`}>
                     <div className={`${styles.buttonRow} row center gap10`}>
                         <div className={styles.buttonName}>Vehicle Restraint:</div>
@@ -259,20 +260,21 @@ export default function Controller() {
                     </div>
                 )}
             </div>
-            <div>
-                {selectedDock?.fsm_state ==="Cycle_Complete"}(
+
+            {/* End Cycle Button - only shown when Cycle_Complete */}
+            {selectedDock?.fsm_state ==="Cycle_Complete" && (
+                <div>
                     <span>Close Load Cycle: </span>
                     <button
                         type="button"
                         disabled={!selectedUuid || !levelerSensorId}
                         className={styles.bayReadyBtn}
                         onClick={() => toggleStatus(false)}
-                    >
+                        >
                         END
                     </button>
-
-                )
-            </div>
+                </div>
+            )}
         </div>
     );
 }
