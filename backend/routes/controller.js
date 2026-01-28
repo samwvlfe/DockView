@@ -378,7 +378,7 @@ module.exports = async function (fastify, opts) {
                     status: newStatus,
                     status_changed_at: NOW,
                     fsm_state_entered_at: NOW,
-                    fsm_state: newFsm,
+                    fsm_state: "awsldfawdc",
                     last_valid_fsm_state: oldFsm,
                     conditions: null,
                     active_cycle_id: activeCycleId
