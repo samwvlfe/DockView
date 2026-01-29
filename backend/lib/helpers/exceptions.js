@@ -3,7 +3,7 @@
 function getExceptionPayload(lastState, sensor) {
   console.log(sensor);
   // Door opened before restraint
-  if (lastState === "Truck_Present" && sensor.type === "DOOR") {
+  if (lastState === "Truck_Present" && sensor.sensor_type === "DOOR") {
     return {
       exception_code: "Invalid_Open",
       message: "Tried To Open Door Before Restraint In Place",
