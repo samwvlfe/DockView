@@ -62,6 +62,7 @@ export default function DashboardPage() {
                 // Listen for exceptions and send notification to sreen
                 if(msg.type === "exception") {
                     const payload = msg.payload;
+                    console.log("payload", payload);
                     
                     // Create new notification with unique ID
                     const newNotification: Notification = {
