@@ -1,9 +1,10 @@
 .notiCont{
-    position: fixed;
-    top: 0;
+    /* position: fixed;
+    top: 0; */
     width: 100vw;
     background-color: var(--notificationYellow);
     border-bottom: 2px solid white;
+    min-height: 50px;
 }
 .notiCont p{
     color: black;

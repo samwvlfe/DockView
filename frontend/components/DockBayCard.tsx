@@ -24,6 +24,7 @@ export default function DockBayCard({ id, name, status, fsm_state, status_change
   // Classes effect
   useEffect(() => {
     setClasses(dockCardClass(status, fsm_state) || "");
+    console.log("set class: ", dockCardClass(status, fsm_state));
   }, [status, fsm_state]);
 
   // Fetch sensors effect
