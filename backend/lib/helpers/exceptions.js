@@ -1,7 +1,8 @@
 // exceptionHandler.js
 
 function getExceptionPayload(lastState, sensor) {
-  console.log(sensor);
+  console.log("sensor: ", sensor);
+  console.log("lastState: ", lastState);
   // Door opened before restraint
   if (lastState === "Truck_Present" && sensor.sensor_type === "DOOR") {
     return {
