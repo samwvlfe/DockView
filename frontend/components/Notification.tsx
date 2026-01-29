@@ -9,6 +9,7 @@ interface NotificationBannerProps {
 
 export default function NotificationBanner({ notifications, onDismiss } : NotificationBannerProps) {
     console.log("notifications: ", notifications);
+    if (!notifications.length) return null;
     return (
         <div className={`${styles.notiCont} stack center gap10`}>
             {notifications.map(notification => (

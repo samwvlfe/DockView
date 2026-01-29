@@ -61,19 +61,19 @@ export default function DashboardPage() {
                 }
                 // Listen for exceptions and send notification to sreen
                 if(msg.type === "exception") {
-                    const payload = msg.payload;
-                    console.log("payload", payload);
+                    const p = msg.payload;
+                    const ex = p.payload;
                     
                     // Create new notification with unique ID
                     const newNotification: Notification = {
                         //random id
                         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
                         isException: true,
-                        message: payload.ExceptionDetails.message,
-                        dock_bay: payload.dock_bay_id,
-                        sensor: payload.ExceptionDetails.payload,
-                        action_fix: payload.ExceptionDetails.fix,
-                        timestamp: payload.timestamp
+                        message: ex.message,
+                        dock_bay: p.dock_bay_id,
+                        sensor: ex.sensor,            // not "ex.payload"
+                        action_fix: ex.fix,
+                        timestamp: p.timestamp,
                     };
 
                     setNotifications(prev => [...prev, newNotification]);
