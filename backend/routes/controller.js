@@ -216,7 +216,7 @@ module.exports = async function (fastify, opts) {
                         }
                     })
                 }
-                
+
                 // if active cycle, update to exception
                 if (dock.active_cycle_id) {
                     const { data: insertCycle, error: cycleError} = await fastify.supabase
@@ -335,7 +335,6 @@ module.exports = async function (fastify, opts) {
                 if ( cycleStartError ){
                     return reply.code(500).send({ error: "Failed to start cycle" });
                 }
-                console.log("Newly created cycle id: ", cycleStart.id);
                 activeCycleId = cycleStart.id;
                 
                 // Update dock bay state to occupied
