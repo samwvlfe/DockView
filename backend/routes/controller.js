@@ -1,5 +1,4 @@
 //Controller Actions
-import Notification from '../../frontend/components/Notification';
 const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
 const { getExceptionPayload } = require("../lib/helpers/exceptions");
