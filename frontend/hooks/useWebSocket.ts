@@ -7,6 +7,7 @@ type Handlers = {
     load_completed?: (payload: any) => void;
     dock_turnover?: (payload: any) => void;
     sensor_updated?: (payload: any) => void;
+    exception?: (payload: any) => void;
 };
 
 export default function useWebSocket(handlers: Handlers) {
@@ -34,6 +35,9 @@ export default function useWebSocket(handlers: Handlers) {
             }
             else if(msg.type === "sensor_updated") {
                 handlers.sensor_updated?.(msg.payload);
+            }
+            else if(msg.type === "exception") {
+                handlers.exception?.(msg.payload);
             }
             else{
                 console.warn("Unknown WS message:", msg);

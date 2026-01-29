@@ -1,0 +1,7 @@
+.notiCont{
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    background-color: var(--notificationYellow);
+    border-bottom: 2px solid white;
+}

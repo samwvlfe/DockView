@@ -197,8 +197,10 @@ export default function Controller() {
                 </div>
             )}
 
-            {/* Fake Sensor Data Buttons */}
-            <div className="row center gap20">
+            {/* Fake Sensor Data Buttons - only show when truck in bay */}
+            {/* {(selectedDock?.fsm_state !== "Bay_Available" || selectedDock?.fsm_state !== "Cycle_Complete") && ( */}
+
+                <div className="row center gap20">
                 <div className={`${styles.buttonCont} stack gap20`}>
                     <div className={`${styles.buttonRow} row center gap10`}>
                         <div className={styles.buttonName}>Vehicle Restraint:</div>
@@ -207,7 +209,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !restraintSensorId}
                             className={`${hasRestraint ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Vehicle Restraint Engaged", restraintSensorId)}
-                        >
+                            >
                             ARM
                         </button>
                         <button
@@ -215,7 +217,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !restraintSensorId}
                             className={`${hasRestraint ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Vehicle Restraint Disengaged", restraintSensorId)}
-                        >
+                            >
                             DISARM
                         </button>
                     </div>
@@ -227,7 +229,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !doorSensorId}
                             className={`${hasDoor ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Door Opened", doorSensorId)}
-                        >
+                            >
                             OPEN
                         </button>
                         <button
@@ -235,7 +237,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !doorSensorId}
                             className={`${hasDoor ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Door Closed", doorSensorId)}
-                        >
+                            >
                             CLOSE
                         </button>
                     </div>
@@ -247,7 +249,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !levelerSensorId}
                             className={`${hasLeveler ? styles.open : styles.buttonNotReady}`}
                             onClick={() => handleAction("Dock Leveler Deployed", levelerSensorId)}
-                        >
+                            >
                             DEPLOY
                         </button>
                         <button
@@ -255,7 +257,7 @@ export default function Controller() {
                             disabled={!selectedUuid || !levelerSensorId}
                             className={`${hasLeveler ? styles.close : styles.buttonNotReady}`}
                             onClick={() => handleAction("Dock Leveler Reset", levelerSensorId)}
-                        >
+                            >
                             RESET
                         </button>
                     </div>
@@ -267,6 +269,7 @@ export default function Controller() {
                     </div>
                 )}
             </div>
+            {/* )} */}
 
             {/* End Cycle Button - only shown when Cycle_Complete */}
             {selectedDock?.fsm_state === "Cycle_Complete" && (

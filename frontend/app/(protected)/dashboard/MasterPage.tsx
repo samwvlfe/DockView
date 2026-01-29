@@ -26,10 +26,9 @@ export default function DashboardPage() {
             // Handle incoming messages
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
-
+                // listen for status updates (truck enter/leave)
                 if (msg.type === "dock_status_update") {
                     const payload = msg.payload;
-                    console.log("dock_status_update payload: ", payload);
                     // Update the relevant dock's status onMessage 
                     setDocks((prevDocks) =>
                         prevDocks.map((dock: DockBay) =>
@@ -43,10 +42,9 @@ export default function DashboardPage() {
                         )
                     );
                 }
-                // Listen for FSM state updates (sensor actions)
+                // Listen for FSM state updates (fsm_states)
                 if (msg.type === "sensor_updated") {
                     const payload = msg.payload;
-                    console.log("sensor_updated payload: ", payload);
                     setDocks((prevDocks) =>
                         prevDocks.map((dock: DockBay) =>
                             dock.id === payload.dock_bay_id
@@ -58,6 +56,11 @@ export default function DashboardPage() {
                         )
                     );
                 }
+                // Listen for exceptions to send notification to screen
+                if (msg.type === "exception") {
+                    const payload = msg.payload;
+                    
+                }
             };
         };
     initializeData();
@@ -65,7 +68,7 @@ export default function DashboardPage() {
 
 
   return (
-        <main>
+        <>
             <div className="content row gap10">  
             <DockGridCont 
                 docks={docks}
@@ -79,6 +82,6 @@ export default function DashboardPage() {
                 selectedDockID={selectedDockID}
                 />
             </div>
-        </main>
+        </>
   );
 }

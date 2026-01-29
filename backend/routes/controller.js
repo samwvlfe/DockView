@@ -1,6 +1,8 @@
 //Controller Actions
+import Notification from '../../frontend/components/Notification';
 const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
+const { getExceptionPayload } = require("../lib/helpers/exceptions");
 
 module.exports = async function (fastify, opts) {
     // any button pressed
@@ -176,7 +178,6 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to insert exception data"});
                 }
 
-
                 // if active cycle, update to exception
                 if (dock.active_cycle_id) {
                     const { data: insertCycle, error: cycleError} = await fastify.supabase
@@ -223,6 +224,10 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to insert sensor event data"});
                 }
 
+                // get exception code and message from helper func
+                const notiPayload = getExceptionPayload(dock.fsm_state, targetSensor);
+                console.log(notiPayload);
+
                 // update exception in public.dock_bays
                 const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
                 .from("dock_bays")
@@ -230,7 +235,8 @@ module.exports = async function (fastify, opts) {
                     fsm_state: nextState,
                     last_valid_fsm_state: dock.fsm_state,
                     conditions: conditions,
-                    fsm_state_entered_at: NOW
+                    fsm_state_entered_at: NOW,
+                    exception_code
                 })
                 .eq("id", dockId)
                 .select("*")
@@ -240,6 +246,9 @@ module.exports = async function (fastify, opts) {
                     console.error("Update error: ", dockErr);
                     return reply.code(500).send({ error: "Failed to update dock"});
                 }
+
+                //broadcast exception to page.tsx for notification/UI
+
             }
 
             // broadcast update

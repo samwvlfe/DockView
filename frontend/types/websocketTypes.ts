@@ -38,13 +38,29 @@ export interface SensorUpdatePayload {
     sensor_id: string;
     sensor_type: string;
     sensor_state?: boolean | null;
-    new_fsm_state: string,
+    new_fsm_state: string;
     action: string;
     timestamp: string;
 }
 export interface SensorUpdateMessage {
     type: "sensor_updated";
     payload: SensorUpdatePayload;
+}
+
+// EXCEPTION MESSAGE
+export interface ExceptionPayload {
+    dock_bay_id: string;
+    sensor_id: string;
+    sensor_type: string;
+    old_fsm_state: string;
+    new_fsm_state: string;
+    action: string;
+    timestamp: string;
+    message: string;
+}
+export interface ExceptionMessage {
+    type: "sensor_updated";
+    payload: ExceptionPayload;
 }
 
 //ADD MORE MESSAGE TYPES AS NEEDED
@@ -54,4 +70,5 @@ export type WebSocketMessage =
   | { type: "dock_status_update"; payload: DockStatusUpdatePayload }
   | { type: "load_completed"; payload: LoadCompletedPayload }
   | { type: "dock_turnover"; payload: DockTurnoverPayload }
-  | { type: "sensor_updated"; payload: SensorUpdatePayload };
+  | { type: "sensor_updated"; payload: SensorUpdatePayload }
+  | { type: "exception"; payload: ExceptionMessage };
