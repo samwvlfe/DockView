@@ -26,4 +26,4 @@ function getExceptionPayload(lastState, sensor) {
   return null;
 }
 
-export { getExceptionPayload };
+module.exports = { getExceptionPayload };
