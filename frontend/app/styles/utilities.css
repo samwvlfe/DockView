@@ -62,3 +62,7 @@
 .activeCardHide{
     display: none;
 }
+
+.exception_DockCard{
+    background-color: var(--notificationYellow);
+}

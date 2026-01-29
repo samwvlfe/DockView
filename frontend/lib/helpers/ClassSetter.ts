@@ -9,6 +9,9 @@ export function dockCardClass(status: string, fsm_state: string){
         if(fsm_state === "LevelerEngaged_ReadyToLoad"){
             return("loading_DockCard");
         }
+        else if(fsm_state === "exception"){
+            return("exception_DockCard")
+        }
         // not being loaded
         else{
             return("active_DockCard");
@@ -18,5 +21,4 @@ export function dockCardClass(status: string, fsm_state: string){
     else{
         return ("");
     }
-    // truck in bay, being loaded
 }

@@ -23,7 +23,6 @@ export default function DockBayCard({ id, name, status, fsm_state, status_change
 
   // Classes effect
   useEffect(() => {
-    console.log(dockCardClass(status, fsm_state));
     setClasses(dockCardClass(status, fsm_state) || "");
   }, [status, fsm_state]);
 

@@ -163,26 +163,60 @@ module.exports = async function (fastify, opts) {
 
                 // get exception code and message from helper func
                 const notiPayload = getExceptionPayload(dock.fsm_state, targetSensor);
-
-                //log in exception table
-                const { data: exceptionInsert, error: exceptionInsertError} = await fastify.supabase
-                .from("exceptions")
-                .insert({
-                    sensor_name: targetSensor.name, 
-                    previous_state: dock.fsm_state,
-                    conditions: conditions,
-                    action: action,
-                    code: notiPayload.exception_code,
-                    fix: notiPayload.fix
-                })
-                .select("*")
-                .single();
                 
-                if (exceptionInsertError) {
-                    console.error("Insert error: ", exceptionInsertError);
-                    return reply.code(500).send({ error: "Failed to insert exception data"});
+                if(notiPayload){
+                    //log in exception table
+                    const { data: exceptionInsert, error: exceptionInsertError} = await fastify.supabase
+                    .from("exceptions")
+                    .insert({
+                        sensor_name: targetSensor.name, 
+                        previous_state: dock.fsm_state,
+                        conditions: conditions,
+                        action: action,
+                        code: notiPayload.exception_code,
+                        fix: notiPayload.fix
+                    })
+                    .select("*")
+                    .single();
+                    
+                    if (exceptionInsertError) {
+                        console.error("Insert error: ", exceptionInsertError);
+                        return reply.code(500).send({ error: "Failed to insert exception data"});
+                    }
+                    
+                    // update exception in public.dock_bays
+                    const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
+                    .from("dock_bays")
+                    .update({
+                        fsm_state: nextState,
+                        last_valid_fsm_state: dock.fsm_state,
+                        conditions: conditions,
+                        fsm_state_entered_at: NOW,
+                        exception_code: notiPayload.exception_code,
+                        exception_payload: notiPayload
+                    })
+                    .eq("id", dockId)
+                    .select("*")
+                    .single();
+                    
+                    if (dockErr) {
+                        console.error("Update error: ", dockErr);
+                        return reply.code(500).send({ error: "Failed to update dock"});
+                    }
+                    
+                    //broadcast exception to page.tsx for notification/UI
+                    broadcaster.broadcast({
+                        type: 'exception',
+                        payload: {
+                            payload: notiPayload,
+                            dock_bay_id: dockId,
+                            old_fsm_state: dock.fsm_state,
+                            new_fsm_state: nextState,
+                            timestamp: NOW,
+                        }
+                    })
                 }
-
+                
                 // if active cycle, update to exception
                 if (dock.active_cycle_id) {
                     const { data: insertCycle, error: cycleError} = await fastify.supabase
@@ -206,7 +240,7 @@ module.exports = async function (fastify, opts) {
                     cycleData = insertCycle;
                     activeCycleId = insertCycle.id;
                 }
-
+    
                 // insert exception into public.sensor_events
                 const { data: insertEvent, error: eventError} = await fastify.supabase
                 .from("sensor_events")
@@ -228,40 +262,8 @@ module.exports = async function (fastify, opts) {
                     console.error("Insert error: ", eventError);
                     return reply.code(500).send({ error: "Failed to insert sensor event data"});
                 }
-
-                // update exception in public.dock_bays
-                const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
-                .from("dock_bays")
-                .update({
-                    fsm_state: nextState,
-                    last_valid_fsm_state: dock.fsm_state,
-                    conditions: conditions,
-                    fsm_state_entered_at: NOW,
-                    exception_code: notiPayload.exception_code,
-                    exception_payload: notiPayload
-                })
-                .eq("id", dockId)
-                .select("*")
-                .single();
-                
-                if (dockErr) {
-                    console.error("Update error: ", dockErr);
-                    return reply.code(500).send({ error: "Failed to update dock"});
-                }
-
-                //broadcast exception to page.tsx for notification/UI
-                broadcaster.broadcast({
-                    type: 'exception',
-                    payload: {
-                        payload: notiPayload,
-                        dock_bay_id: dockId,
-                        old_fsm_state: dock.fsm_state,
-                        new_fsm_state: nextState,
-                        timestamp: NOW,
-                    }
-                })
             }
-
+            
             // broadcast update
             broadcaster.broadcast({
                 type: 'sensor_updated',
