@@ -4,14 +4,17 @@
 import { useEffect, useState } from "react";
 import DockGridCont from "@/components/DockGridCont";
 import InfoContainer from "@/components/InfoContainer";
+import NotificationBanner from "@/components/Notification";
 import { fetchDocks } from "@/lib/api";
 import { DockBay } from "@/types/interfaces";
-
+import { Notification } from '@/types/interfaces';
 
 export default function DashboardPage() {
     // dock data
     const [docks, setDocks] = useState<DockBay[]>([]);
     const [selectedDockID, setselectedDockID] = useState<string | null>(null);
+    //notification data
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     // Fetch dock data first then listen for WS updates
     useEffect(() => {
@@ -56,30 +59,46 @@ export default function DashboardPage() {
                         )
                     );
                 }
-                // Listen for exceptions to send notification to screen
-                if (msg.type === "exception") {
+                // Listen for exceptions and send notification to sreen
+                if(msg.type === "exception") {
                     const payload = msg.payload;
                     
+                    // Create new notification with unique ID
+                    const newNotification: Notification = {
+                        //random id
+                        id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                        isException: true,
+                        message: payload.ExceptionDetails.message,
+                        dock_bay: payload.dock_bay_id,
+                        sensor: payload.ExceptionDetails.payload,
+                        action_fix: payload.ExceptionDetails.fix,
+                        timestamp: payload.timestamp
+                    };
+
+                    setNotifications(prev => [...prev, newNotification]);
                 }
             };
         };
     initializeData();
   }, []);
 
-
   return (
         <>
-            <div className="content row gap10">  
-            <DockGridCont 
-                docks={docks}
-                selectedDockId={selectedDockID}
-                onSelectDock={setselectedDockID}
+            <NotificationBanner 
+                notifications={notifications}
+                onDismiss={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
             />
+            <div className="content row gap10">  
+                <DockGridCont 
+                    docks={docks}
+                    selectedDockId={selectedDockID}
+                    onSelectDock={setselectedDockID}
+                />
 
-            <InfoContainer 
-                docks={docks} 
-                selectedWidgets={["utilization", "loadsCompleted"]}
-                selectedDockID={selectedDockID}
+                <InfoContainer 
+                    docks={docks} 
+                    selectedWidgets={["utilization", "loadsCompleted"]}
+                    selectedDockID={selectedDockID}
                 />
             </div>
         </>

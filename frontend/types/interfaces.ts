@@ -45,4 +45,22 @@ export interface Sensor {
   created_at: string;
   friendly_id: number;
   sensor_state: boolean;
+  updated_state_at: string | null;
+}
+
+export interface ExceptionDetails {
+  code: string;
+  message: string;
+  sensor: Sensor;
+  fix: string;
+}
+
+export interface Notification {
+  id: string;
+  isException: boolean;
+  message: string;
+  dock_bay: string
+  sensor: Sensor;
+  action_fix: string;
+  timestamp: string;
 }

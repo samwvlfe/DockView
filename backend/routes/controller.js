@@ -160,6 +160,10 @@ module.exports = async function (fastify, opts) {
             }
             // log exception and broadcast update
             else{
+
+                // get exception code and message from helper func
+                const notiPayload = getExceptionPayload(dock.fsm_state, targetSensor);
+
                 //log in exception table
                 const { data: exceptionInsert, error: exceptionInsertError} = await fastify.supabase
                 .from("exceptions")
@@ -167,7 +171,9 @@ module.exports = async function (fastify, opts) {
                     sensor_name: targetSensor.name, 
                     previous_state: dock.fsm_state,
                     conditions: conditions,
-                    action: action
+                    action: action,
+                    code: notiPayload.exception_code,
+                    fix: notiPayload.fix
                 })
                 .select("*")
                 .single();
@@ -223,10 +229,6 @@ module.exports = async function (fastify, opts) {
                     return reply.code(500).send({ error: "Failed to insert sensor event data"});
                 }
 
-                // get exception code and message from helper func
-                const notiPayload = getExceptionPayload(dock.fsm_state, targetSensor);
-                console.log(notiPayload);
-
                 // update exception in public.dock_bays
                 const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
                 .from("dock_bays")
@@ -235,7 +237,8 @@ module.exports = async function (fastify, opts) {
                     last_valid_fsm_state: dock.fsm_state,
                     conditions: conditions,
                     fsm_state_entered_at: NOW,
-                    exception_code
+                    exception_code: notiPayload.exception_code,
+                    exception_payload: notiPayload
                 })
                 .eq("id", dockId)
                 .select("*")
@@ -247,7 +250,16 @@ module.exports = async function (fastify, opts) {
                 }
 
                 //broadcast exception to page.tsx for notification/UI
-
+                broadcaster.broadcast({
+                    type: 'exception',
+                    payload: {
+                        payload: notiPayload,
+                        dock_bay_id: dockId,
+                        old_fsm_state: dock.fsm_state,
+                        new_fsm_state: nextState,
+                        timestamp: NOW,
+                    }
+                })
             }
 
             // broadcast update

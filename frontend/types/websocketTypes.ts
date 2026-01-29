@@ -1,3 +1,5 @@
+import { ExceptionDetails } from './interfaces';
+
 // DOCK STATUS UPDATE MESSAGE
 export type DockStatusUpdatePayload = {
   dock_bay_id: string;
@@ -49,17 +51,14 @@ export interface SensorUpdateMessage {
 
 // EXCEPTION MESSAGE
 export interface ExceptionPayload {
+    payload: ExceptionDetails;    
     dock_bay_id: string;
-    sensor_id: string;
-    sensor_type: string;
     old_fsm_state: string;
     new_fsm_state: string;
-    action: string;
     timestamp: string;
-    message: string;
 }
 export interface ExceptionMessage {
-    type: "sensor_updated";
+    type: "exception";
     payload: ExceptionPayload;
 }
 

@@ -1,12 +1,29 @@
-// takes in the last valid state the sensor data
-// compiles exception payload: exception_code, message, sensor, dock
-// broadcasts to page.tsx to build notification -> notification.tsx
+// exceptionHandler.js
 
-//const broadcaster = require("../lib/broadcaster");
-
-function getExceptionPayload(lastState, sensor){
-    console.log("SENSOR ON EXCEPTION: ", sensor);
-    return "(((temp payload)))"
+function getExceptionPayload(lastState, sensor) {
+  
+  // Door opened before restraint
+  if (lastState === "Truck_Present" && sensor.type === "DOOR") {
+    return {
+      exception_code: "Invalid_Open",
+      message: "Tried To Open Door Before Restraint In Place",
+      sensor: sensor,  // Pass the entire sensor object
+      fix: "Close Door",
+    };
+  }
+  
+  // Leveler opened before restraint
+  if (lastState === "Truck_Present" && sensor.type === "LEVELER") {
+    return {
+      exception_code: "Invalid_Open",
+      message: "Tried To Open Leveler Before Restraint In Place",
+      sensor: sensor,  // Pass the entire sensor object
+      fix: "Close Leveler",
+    };
+  }
+  
+  // No exception detected
+  return null;
 }
 
-module.exports = { getExceptionPayload };
+export { getExceptionPayload };

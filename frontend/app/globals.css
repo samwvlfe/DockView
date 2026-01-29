@@ -26,3 +26,6 @@ main{
   flex-direction: column;
   overflow: hidden;
 }
+.relative{
+  position: relative;
+}

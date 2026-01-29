@@ -5,3 +5,8 @@
     background-color: var(--notificationYellow);
     border-bottom: 2px solid white;
 }
+.notiCont p{
+    color: black;
+    font-weight: bold;
+    font-size: 15px;
+}

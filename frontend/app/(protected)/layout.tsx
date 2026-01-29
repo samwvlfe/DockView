@@ -10,7 +10,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <main className="relative">{children}</main>
     </>
   );
 }
