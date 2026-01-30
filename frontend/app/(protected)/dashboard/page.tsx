@@ -45,7 +45,7 @@ export default function DashboardPage() {
                         )
                     );
                 }
-                // Listen for FSM state updates (fsm_states)
+                // Listen for FSM state and load timer updates
                 if (msg.type === "sensor_updated") {
                     const payload = msg.payload;
                     setDocks((prevDocks) =>
@@ -53,7 +53,8 @@ export default function DashboardPage() {
                             dock.id === payload.dock_bay_id
                             ? {
                                 ...dock,
-                                fsm_state: payload.new_fsm_state
+                                fsm_state: payload.new_fsm_state,
+                                currLoad_started_at: payload.loadingStarted_at
                                 }
                             : dock
                         )

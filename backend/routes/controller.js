@@ -1,4 +1,5 @@
 //Controller Actions
+import { LoadCompletedPayload } from '../../frontend/types/websocketTypes';
 const broadcaster = require("../lib/broadcaster");
 const { stateMachine } = require("../lib/helpers/controllerHelpers");
 const { getExceptionPayload } = require("../lib/helpers/exceptions");
@@ -139,6 +140,9 @@ module.exports = async function (fastify, opts) {
                 }
                 
                 // update info in public.dock_bays
+                // if leveler deployed, start current load timer
+                let loadingStarted = null;
+                nextState === "LevelerEngaged_ReadyToLoad" ? loadingStarted = NOW : loadingStarted = null;
                 const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
                 .from("dock_bays")
                 .update({
@@ -146,7 +150,8 @@ module.exports = async function (fastify, opts) {
                     last_valid_fsm_state: dock.fsm_state,
                     conditions: updatedConditions,
                     fsm_state_entered_at: NOW,
-                    active_cycle_id: activeCycleId
+                    active_cycle_id: activeCycleId,
+                    currLoad_started_at: loadingStarted
                 })
                 .eq("id", dockId)
                 .select("*")
@@ -274,7 +279,8 @@ module.exports = async function (fastify, opts) {
                     sensor_state: flippedSensorState ?? targetSensor.sensor_state,
                     new_fsm_state: nextState,
                     action: action,
-                    timestamp: NOW
+                    timestamp: NOW,
+                    loadingStarted_at: loadingStarted
                 }
             });
 

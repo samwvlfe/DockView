@@ -33,6 +33,7 @@ export interface SensorUpdatePayload {
     new_fsm_state: string;
     action: string;
     timestamp: string;
+    loadingStarted_at: string | null;
 }
 export interface SensorUpdateMessage {
     type: "sensor_updated";

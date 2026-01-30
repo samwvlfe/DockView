@@ -11,7 +11,7 @@ export interface DockBay {
   consitions?: string | null;
   active_cycle_id?: string | null;
   fsm_state_entered_at?: string | null;
-  fsm_updated_at?: string | null;
+  currLoad_started_at?: string | null;
   group_id?: string | null;
 }
 

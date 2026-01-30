@@ -4,6 +4,7 @@ import { DockBay } from "@/types/interfaces";
 //eventually make baseURL an .env variable
 const baseURL = "https://dockview.onrender.com";
 
+// initial setting of all docks 
 export async function fetchDocks() {
   const res = await fetch(`${baseURL}/docks`, {
     method: "GET",
@@ -14,6 +15,7 @@ export async function fetchDocks() {
   return res.json();
 }
 
+// used in dock bay history component
 export async function fetchDockByID(id:string) {
   const res = await fetch(`${baseURL}/dock/${id}`, {
     method: "GET",
@@ -24,6 +26,7 @@ export async function fetchDockByID(id:string) {
   return res.json();
 }
 
+// need to change to looking at dock_cycles.ended_at()
 export async function fetchLoadsCompleted() {
   const res = await fetch(`${baseURL}/stats/loadsCompleted`, {
     method: "GET",

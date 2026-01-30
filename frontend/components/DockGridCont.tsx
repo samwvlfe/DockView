@@ -40,7 +40,7 @@ export default function DockGridCont({ docks, onSelectDock, selectedDockId }: Do
                             name={dock.name}
                             status={dock.status}
                             fsm_state={dock.fsm_state ?? ""}
-                            status_changed_at={dock.status_changed_at}
+                            loadStarted_at={dock.currLoad_started_at}
                             onClick={() => onSelectDock(dock.id)}
                             isSelected={dock.id === selectedDockId}
                         />

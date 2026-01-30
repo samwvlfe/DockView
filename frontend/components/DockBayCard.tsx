@@ -11,12 +11,12 @@ interface DockBayCardProps {
   name: string;
   status: string;
   fsm_state: string;
-  status_changed_at?: string;
+  loadStarted_at?: string | null;
   onClick: () => void;
   isSelected: boolean;
 }
 
-export default function DockBayCard({ id, name, status, fsm_state, status_changed_at, onClick, isSelected}: DockBayCardProps) {
+export default function DockBayCard({ id, name, status, fsm_state, loadStarted_at, onClick, isSelected}: DockBayCardProps) {
   const [elapsed, setElapsed] = useState("00:00:00");
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [classes, setClasses] = useState("");
@@ -40,13 +40,13 @@ export default function DockBayCard({ id, name, status, fsm_state, status_change
 
   // Timer effect
   useEffect(() => {
-    if (status !== 'occupied' || !status_changed_at) {
+    if (status !== 'occupied' || !loadStarted_at) {
       setElapsed("closed");
       return;
     }
 
     function updateElapsed() {
-      const start = new Date(status_changed_at!).getTime();
+      const start = new Date(loadStarted_at!).getTime();
       const now = Date.now();
       const diff = now - start;
 
@@ -65,7 +65,7 @@ export default function DockBayCard({ id, name, status, fsm_state, status_change
     const interval = setInterval(updateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [status, status_changed_at]);
+  }, [status, loadStarted_at]);
 
   return (
     <div 
