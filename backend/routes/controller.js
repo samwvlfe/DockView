@@ -69,6 +69,7 @@ module.exports = async function (fastify, opts) {
             let flippedSensorState = null;
             let updatedDockInfo = null;
             let insertEvent = null;
+            let loadingStarted = null;
 
             //No exception, change state and log
             if(nextState !== "Exception"){
@@ -140,7 +141,6 @@ module.exports = async function (fastify, opts) {
                 
                 // update info in public.dock_bays
                 // if leveler deployed, start current load timer
-                let loadingStarted = null;
                 nextState === "LevelerEngaged_ReadyToLoad" ? loadingStarted = NOW : loadingStarted = null;
                 const { data: updatedDockInfo, error: dockErr} = await fastify.supabase
                 .from("dock_bays")

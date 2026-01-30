@@ -45,17 +45,23 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
-    // GET Dock Bay loads completed today - Move to cycles 
+    // get loads completed today - cycles that are closed
     fastify.get("/stats/loadsCompleted", async () => {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+
         const { data, error } = await fastify.supabase
-            .from("dock_bay_history")
-            .select("*")
-            .eq("old_status", "occupied")
-            .eq("new_status", "idle")
-            //only get completed loads TODAY
-            .gte("created_at", new Date(new Date().setHours(0,0,0,0)).toISOString());
+            .from("dock_cycles")
+            .select("ended_at")
+            .not("ended_at", "is", null)
+            .gte("ended_at", start.toISOString())
+            .lt("ended_at", end.toISOString());
 
         if (error) return { error: "Failed to fetch dock history" };
-    return data;
+        return data;
     });
+
 }

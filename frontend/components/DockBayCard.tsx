@@ -40,7 +40,9 @@ export default function DockBayCard({ id, name, status, fsm_state, loadStarted_a
 
   // Timer effect
   useEffect(() => {
-    if (status !== 'occupied' || !loadStarted_at) {
+    //stop timer when leveler is closed
+    //no timer if no leveler open data
+    if (fsm_state !== 'LevelerEngaged_ReadyToLoad' || !loadStarted_at) {
       setElapsed("closed");
       return;
     }
