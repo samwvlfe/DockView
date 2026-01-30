@@ -13,7 +13,6 @@ export interface DockBay {
   fsm_state_entered_at?: string | null;
   fsm_updated_at?: string | null;
   group_id?: string | null;
-
 }
 
 export interface DockHistory {
