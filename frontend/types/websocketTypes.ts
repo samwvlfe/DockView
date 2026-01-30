@@ -24,16 +24,6 @@ export interface LoadCompletedMessage {
     payload: LoadCompletedPayload;
 }
 
-// DOCK TURNOVER MESSAGE
-export interface DockTurnoverPayload {
-    dock_bay_id: string;
-    duration: string;
-}
-export interface DockTurnoverMessage {
-    type: "dock_turnover";
-    payload: DockTurnoverPayload;
-}
-
 // SENSOR UPDATED MESSAGE
 export interface SensorUpdatePayload {
     dock_bay_id: string;
@@ -68,6 +58,5 @@ export interface ExceptionMessage {
 export type WebSocketMessage =
   | { type: "dock_status_update"; payload: DockStatusUpdatePayload }
   | { type: "load_completed"; payload: LoadCompletedPayload }
-  | { type: "dock_turnover"; payload: DockTurnoverPayload }
   | { type: "sensor_updated"; payload: SensorUpdatePayload }
   | { type: "exception"; payload: ExceptionMessage };

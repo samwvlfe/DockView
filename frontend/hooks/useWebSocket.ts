@@ -5,7 +5,6 @@ import { WebSocketMessage } from "@/types/websocketTypes";
 type Handlers = {
     dock_status_update?: (payload: any) => void;
     load_completed?: (payload: any) => void;
-    dock_turnover?: (payload: any) => void;
     sensor_updated?: (payload: any) => void;
     exception?: (payload: any) => void;
 };
@@ -29,9 +28,6 @@ export default function useWebSocket(handlers: Handlers) {
             }
             else if(msg.type == "load_completed") {
                 handlers.load_completed?.(msg.payload);
-            }
-            else if(msg.type == "dock_turnover") {
-                handlers.dock_turnover?.(msg.payload);
             }
             else if(msg.type === "sensor_updated") {
                 handlers.sensor_updated?.(msg.payload);

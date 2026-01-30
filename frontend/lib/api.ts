@@ -1,5 +1,5 @@
-// FUNCTIONS that call the routes defined in backend/routes/*
-import { AvgTurnoverResponse, DockBay } from "@/types/interfaces";
+import { DockBay } from "@/types/interfaces";
+
 
 //eventually make baseURL an .env variable
 const baseURL = "https://dockview.onrender.com";
@@ -31,16 +31,6 @@ export async function fetchLoadsCompleted() {
   if(!res.ok){
     throw new Error("Failed to fetch loads completed");
   }
-  return res.json();
-}
-
-export async function fetchAvgTurnoverTime(days:string): Promise<AvgTurnoverResponse> {
-  const res = await fetch(`${baseURL}/stats/turnover/${days}`, {
-    method: "GET",
-  });
-  if(!res.ok){
-    throw new Error('Failed to fetch avg turnover');
-  } 
   return res.json();
 }
 

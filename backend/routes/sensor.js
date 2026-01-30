@@ -105,29 +105,10 @@ module.exports = async function (fastify, opts) {
                         return reply.code(500).send({ error: "Failed to update last occupied time" });
                     }
                 }
-                
-                let turnoverTime = null;
 
                 // DOCK BAY UPDATED TO IDLE
                 if (oldStatus === "occupied" && newStatus === "idle") {
                     actionType = "dock marked idle";
-                    // compute duration of turnover
-                    if(dockBay && dockBay.currLoad_started_at){
-                        //get time the load started then compute
-                        const startedLoad = new Date(dockBay.currLoad_started_at);
-                        if (!isNaN(startedLoad.getTime())) {
-                            turnoverTime = (new Date(NOW).getTime() - startedLoad.getTime()) / 1000;
-                        }
-                    }
-
-                    // Broadcast turnover
-                    broadcaster.broadcast({
-                        type: "dock_turnover",
-                        payload: {
-                            dock_bay_id: dock_bay_id,
-                            duration: secondsToHuman(turnoverTime)
-                        }
-                    });
 
                     // Broadcast load complete to widget
                     broadcaster.broadcast({
@@ -148,8 +129,7 @@ module.exports = async function (fastify, opts) {
                         old_status: oldStatus,
                         new_status: newStatus,
                         reason: action,
-                        event_id: event.id, 
-                        turnover_time: turnoverTime
+                        event_id: event.id
                     });
 
                 if (historyError) {

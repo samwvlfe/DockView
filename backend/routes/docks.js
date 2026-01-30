@@ -27,8 +27,7 @@ module.exports = async function (fastify, opts) {
                     old_status,
                     new_status,
                     reason,
-                    created_at,
-                    turnover_time
+                    created_at
                 )`)
             .eq("id", id)
             .gte("dock_bay_history.created_at", sevenDays.toISOString())
@@ -58,40 +57,5 @@ module.exports = async function (fastify, opts) {
 
         if (error) return { error: "Failed to fetch dock history" };
     return data;
-    });
-
-    // Call get_turnover_stats() stored procedure
-    fastify.get("/stats/turnover/:days", async (request, reply) => {
-    try {
-        const days = request.params.days;
-        const daysNum = Number(days);
-
-        if (Number.isNaN(daysNum)) {
-            reply.code(400);
-            return { error: "Invalid days parameter" };
-        }
-
-        const { data, error } = await fastify.supabase
-            .rpc('get_turnover_stats', { days_ago: daysNum });
-
-        if (error) {
-            console.error("Supabase error:", error);
-            reply.code(500);
-            return { error: "Failed to fetch turnover avg" };
-        }
-
-        if (!data || data.length === 0) {
-            return {
-                avg_turnover_time: null,
-                turnover_count: 0
-            };
-        }
-
-            return data[0];
-        } catch (err) {
-            console.error("Route error:", err);
-            reply.code(500);
-            return { error: "Internal server error" };
-        }
     });
 }

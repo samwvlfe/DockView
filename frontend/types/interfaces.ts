@@ -12,6 +12,8 @@ export interface DockBay {
   active_cycle_id?: string | null;
   fsm_state_entered_at?: string | null;
   fsm_updated_at?: string | null;
+  group_id?: string | null;
+
 }
 
 export interface DockHistory {
@@ -32,10 +34,6 @@ export interface DockInfoHistory {
   history: DockHistory[];
 }
 
-export interface AvgTurnoverResponse {
-  avg_turnover_time: number | null;
-  turnover_count: number | null;
-}
 
 export interface Sensor {
   id: string;
