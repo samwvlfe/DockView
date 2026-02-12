@@ -20,7 +20,7 @@ export default function Sensors({ dock_bay, sensors }: SensorProps) {
         if (!dock_bay) return;
 
         // Connect to WebSocket
-        const ws = new WebSocket("wss://dockview.onrender.com/ws");
+        const ws = new WebSocket(`${process.env.WEBSOCKET_URL}`);
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
