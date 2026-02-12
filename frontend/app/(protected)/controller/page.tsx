@@ -62,7 +62,7 @@ export default function Controller() {
     useEffect(() => {
         if (!selectedUuid) return;
 
-        const ws = new WebSocket(`${process.env.WEBSOCKET_URL}`);
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);

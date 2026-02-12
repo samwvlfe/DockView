@@ -24,7 +24,7 @@ export default function DashboardPage() {
             setDocks(initDocks);
 
             // Open WS connection
-            const ws = new WebSocket(`${process.env.WEBSOCKET_URL}`);
+            const ws = new WebSocket("wss://dockview.onrender.com/ws");
             ws.onopen = () => console.log("WebSocket connection established");
             // Handle incoming messages
             ws.onmessage = (event) => {

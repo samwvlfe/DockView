@@ -13,7 +13,7 @@ export default function useWebSocket(handlers: Handlers) {
     const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        const ws = new WebSocket(`${process.env.WEBSOCKET_URL}`);
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
         wsRef.current = ws;
 
         ws.onopen = () => console.log("WS Connected");
