@@ -14,7 +14,7 @@ export default function LoadsCompletedWidget() {
             setCount(data.length);
         });
         //connect to websocket for real-time updates
-        const ws = new WebSocket(`${process.env.WEBSOCKET_URL}`);
+        const ws = new WebSocket("wss://dockview.onrender.com/ws");
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);

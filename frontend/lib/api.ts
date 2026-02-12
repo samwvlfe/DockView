@@ -2,7 +2,7 @@ import { DockBay } from "@/types/interfaces";
 
 
 //eventually make baseURL an .env variable
-const baseURL = process.env.BASE_URL;
+const baseURL = "https://dockview.onrender.com"
 
 // initial setting of all docks 
 export async function fetchDocks() {
