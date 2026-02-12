@@ -1,30 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import InfoWidget from "../InfoWidget";
 import Image from "next/image";
 import comp from "@/public/completed-icon.png";
 import { fetchLoadsCompleted } from "@/lib/api";
+import useWebSocket from "@/hooks/useWebSocket";
 
 export default function LoadsCompletedWidget() {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
-        // Initially fetch from DB
         fetchLoadsCompleted().then(data => {
             setCount(data.length);
         });
-        //connect to websocket for real-time updates
-        const ws = new WebSocket("wss://dockview.onrender.com/ws");
-
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            if(msg.type === "load_completed"){
-                setCount(prevCount => prevCount + 1);
-            }
-        };
-
-        return () => ws.close();
     }, []);
+
+    const handleLoadCompleted = useCallback(() => {
+        setCount(prevCount => prevCount + 1);
+    }, []);
+
+    const wsHandlers = useMemo(() => ({
+        load_completed: handleLoadCompleted,
+    }), [handleLoadCompleted]);
+
+    useWebSocket(wsHandlers);
 
     return (
         <InfoWidget

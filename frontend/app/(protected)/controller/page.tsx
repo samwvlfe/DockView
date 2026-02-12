@@ -1,14 +1,15 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import styles from "./controllerpage.module.css";
 import { fetchDocks, fetchSensorsByDockID, sendControllerAction, DockCycle } from "@/lib/api";
 import { DockBay, Sensor } from "@/types/interfaces";
+import useWebSocket from "@/hooks/useWebSocket";
 
 export default function Controller() {
     // Dock data
     const [docks, setDocks] = useState<DockBay[]>([]);
     const [selectedUuid, setSelectedUuid] = useState<string>("");
-    // Sensor data 
+    // Sensor data
     const [sensors, setSensors] = useState<Sensor[]>([]);
     const [sensorsLoading, setSensorsLoading] = useState(false);
     // State
@@ -58,46 +59,24 @@ export default function Controller() {
         setCurrState(selectedState);
     }, [selectedState]);
 
-    // change state/status automatically via websocket from controller.js
-    useEffect(() => {
-        if (!selectedUuid) return;
-
-        const ws = new WebSocket("wss://dockview.onrender.com/ws");
-
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-
-            //listen for sensor updates, update currstate and docks array
-            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === selectedUuid) {
-                setCurrState(msg.payload.new_fsm_state);
-                setDocks(prevDocks =>
-                    prevDocks.map(d =>
-                        d.id === selectedUuid
-                            ? { ...d, fsm_state: msg.payload.new_fsm_state }
-                            : d
-                    )
-                );
-            }
-            //listen for status updates to get active dock cycle id for reset
-            if (msg.type === "dock_cycle_updated") {
-                setCurrState(msg.payload.fsm_state);
-                setDocks(prevDocks =>
-                    prevDocks.map(d =>
-                        d.id === msg.payload.dock_bay_id
-                            ? {
-                                ...d,
-                                active_cycle_id: msg.payload.active_cycle_id,
-                                fsm_state: msg.payload.fsm_state
-                            }
-                            : d
-                    )
-                );
-            }
-        };
-
-        return () => ws.close();
+    // WS handler: update currState and docks array on sensor changes
+    const handleSensorUpdated = useCallback((payload: any) => {
+        if (payload.dock_bay_id !== selectedUuid) return;
+        setCurrState(payload.new_fsm_state);
+        setDocks(prevDocks =>
+            prevDocks.map(d =>
+                d.id === selectedUuid
+                    ? { ...d, fsm_state: payload.new_fsm_state }
+                    : d
+            )
+        );
     }, [selectedUuid]);
 
+    const wsHandlers = useMemo(() => ({
+        sensor_updated: handleSensorUpdated,
+    }), [handleSensorUpdated]);
+
+    useWebSocket(wsHandlers);
 
     // check for sensors
     const sensorTypes = useMemo(() => {
@@ -129,22 +108,22 @@ export default function Controller() {
             if (!theDock) {
                 throw new Error("Dock not found");
             }
-                        
+
             console.log("Sending dock to server:", {
                 id: theDock.id,
                 name: theDock.name,
                 active_cycle_id: theDock.active_cycle_id,
                 fsm_state: theDock.fsm_state
             });
-            
+
             const result = await DockCycle(theDock, status);
             if(result){
                 setCurrState(result.new_state);
 
                 //update dock with return
-                setDocks(prevDocks => 
-                    prevDocks.map(d => 
-                        d.id === result.dock_bay_id 
+                setDocks(prevDocks =>
+                    prevDocks.map(d =>
+                        d.id === result.dock_bay_id
                             ? { ...d, active_cycle_id: result.active_cycle_id, fsm_state: result.new_state }
                             : d
                     )
@@ -181,7 +160,7 @@ export default function Controller() {
                 </select>
 
             </div>
-            
+
             {/* Start cycle button - only show when Bay_Available */}
             {selectedDock?.fsm_state === "Bay_Available" && (
                 <div>
@@ -221,7 +200,7 @@ export default function Controller() {
                             DISARM
                         </button>
                     </div>
-                    
+
                     <div className={`${styles.buttonRow} row center gap10`}>
                         <div className={styles.buttonName}>Dock Bay Door:</div>
                         <button
@@ -241,7 +220,7 @@ export default function Controller() {
                             CLOSE
                         </button>
                     </div>
-                    
+
                     <div className={`${styles.buttonRow} row center gap10`}>
                         <div className={styles.buttonName}>Dock Leveler:</div>
                         <button

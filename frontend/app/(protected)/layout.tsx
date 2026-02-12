@@ -1,16 +1,12 @@
+"use client";
 import Header from "@/components/Header";
+import { WebSocketProvider } from "@/contexts/WebSocketContext";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  // If you already have an auth check, put it here so it applies to all protected pages.
-  // Example patterns:
-  // - server session check + redirect
-  // - calling your auth helper
-  // - checking cookies
-
   return (
-    <>
+    <WebSocketProvider>
       <Header />
       <main className="relative">{children}</main>
-    </>
+    </WebSocketProvider>
   );
 }

@@ -1,7 +1,8 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import styles from "./DockBayCard.module.css";
 import { Sensor } from "@/types/interfaces";
+import useWebSocket from "@/hooks/useWebSocket";
 
 interface SensorProps {
     dock_bay: string | null;
@@ -16,41 +17,26 @@ export default function Sensors({ dock_bay, sensors }: SensorProps) {
         setSensors(sensors);
     }, [sensors]);
 
-    useEffect(() => {
-        if (!dock_bay) return;
-
-        // Connect to WebSocket
-        const ws = new WebSocket("wss://dockview.onrender.com/ws");
-
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            
-            // Only handle sensor updates for THIS dock bay
-            if (msg.type === "sensor_updated" && msg.payload.dock_bay_id === dock_bay) {                
-                setSensors(prev => 
-                    prev.map(sensor => 
-                        sensor.id === msg.payload.sensor_id 
-                            ? { 
-                                ...sensor, 
-                                sensor_state: msg.payload.sensor_state,
-                                sensor_type: msg.payload.sensor_type
-                            }
-                            : sensor
-                    )
-                );
-            }
-        };
-
-        ws.onerror = (err) => console.error("WS ERROR:", err);
-        ws.onclose = () => console.log(`WS Disconnected for dock ${dock_bay}`);
-
-        // Cleanup on unmount
-        return () => {
-            console.log(`Closing WS for dock ${dock_bay}`);
-            ws.close();
-        };
+    const handleSensorUpdated = useCallback((payload: any) => {
+        if (payload.dock_bay_id !== dock_bay) return;
+        setSensors(prev =>
+            prev.map(sensor =>
+                sensor.id === payload.sensor_id
+                    ? {
+                        ...sensor,
+                        sensor_state: payload.sensor_state,
+                        sensor_type: payload.sensor_type
+                    }
+                    : sensor
+            )
+        );
     }, [dock_bay]);
 
+    const wsHandlers = useMemo(() => ({
+        sensor_updated: handleSensorUpdated,
+    }), [handleSensorUpdated]);
+
+    useWebSocket(wsHandlers);
 
     return (
     <div className={`${styles.sensorCont} stack`}>
@@ -59,7 +45,7 @@ export default function Sensors({ dock_bay, sensors }: SensorProps) {
         ) : (
             theseSensors.slice().reverse().map((s) => (
                 <div key={s.id} className={`row center gap5`}>
-                    <div 
+                    <div
                         className={`${styles.sensStatus} ${
                             s.sensor_state ? 'sensorColActive' : 'sensorColInactive'
                         }`}
