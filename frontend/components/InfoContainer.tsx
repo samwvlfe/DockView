@@ -5,14 +5,16 @@ import { WidgetKey, WIDGET_BANK } from "./widgets/WidgetBank";
 import { DockBay, DockInfoHistory } from "@/types/interfaces";
 import { fetchDockByID } from "@/lib/api";
 import DockInfoCard from "./DockInfoCard";
+import WidgetSelector from "./WidgetSelector";
 
 interface InfoContainerProps {
   docks: DockBay[];
   selectedWidgets: WidgetKey[];
+  onWidgetChange: (newSelection: WidgetKey[]) => void;
   selectedDockID: string | null;
 }
 
-export default function InfoContainer({ docks, selectedWidgets, selectedDockID }: InfoContainerProps) {
+export default function InfoContainer({ docks, selectedWidgets, onWidgetChange, selectedDockID }: InfoContainerProps) {
 
   const [selectedDock, setSelectedDock] = useState<DockInfoHistory | null>(null);
 
@@ -49,8 +51,12 @@ export default function InfoContainer({ docks, selectedWidgets, selectedDockID }
   return (
     <div className="stack gap10">
       {selectedDock && <DockInfoCard dock={selectedDock}/>}
+      <div className="apart center">
+          <span className="widget-subhdr">WIDGETS</span>
+          <WidgetSelector selected={selectedWidgets} onChange={onWidgetChange} />
+      </div>
       <div className={`${styles['widgets-grid']} gap10`}>
-          {selectedWidgets.map(key => { 
+          {selectedWidgets.map(key => {
               const Widget = WIDGET_BANK[key];
               return <Widget key={key} docks={docks}/>;
           })}

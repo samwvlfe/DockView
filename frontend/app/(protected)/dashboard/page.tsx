@@ -9,6 +9,7 @@ import useWebSocket from "@/hooks/useWebSocket";
 import { fetchDocks } from "@/lib/api";
 import { DockBay } from "@/types/interfaces";
 import { Notification } from '@/types/interfaces';
+import { WidgetKey } from "@/components/widgets/WidgetBank";
 
 export default function DashboardPage() {
     // dock data
@@ -16,6 +17,8 @@ export default function DashboardPage() {
     const [selectedDockID, setselectedDockID] = useState<string | null>(null);
     //notification data
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    // widget selection
+    const [selectedWidgets, setSelectedWidgets] = useState<WidgetKey[]>(["utilization", "loadsCompleted"]);
 
     // Fetch dock data on mount
     useEffect(() => {
@@ -90,7 +93,8 @@ export default function DashboardPage() {
 
                 <InfoContainer
                     docks={docks}
-                    selectedWidgets={["utilization", "loadsCompleted"]}
+                    selectedWidgets={selectedWidgets}
+                    onWidgetChange={setSelectedWidgets}
                     selectedDockID={selectedDockID}
                 />
             </div>

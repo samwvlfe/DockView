@@ -64,4 +64,33 @@ module.exports = async function (fastify, opts) {
         return data;
     });
 
+    // get average load time today from completed cycles
+    fastify.get("/stats/avgLoadTime", async () => {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+
+        const { data, error } = await fastify.supabase
+            .from("dock_cycles")
+            .select("created_at, ended_at")
+            .not("ended_at", "is", null)
+            .gte("ended_at", start.toISOString())
+            .lt("ended_at", end.toISOString());
+
+        if (error) return { error: "Failed to fetch avg load time" };
+
+        if (!data || data.length === 0) {
+            return { avgSeconds: 0, count: 0 };
+        }
+
+        const totalMs = data.reduce((sum, cycle) => {
+            return sum + (new Date(cycle.ended_at).getTime() - new Date(cycle.created_at).getTime());
+        }, 0);
+
+        const avgSeconds = Math.round(totalMs / data.length / 1000);
+        return { avgSeconds, count: data.length };
+    });
+
 }

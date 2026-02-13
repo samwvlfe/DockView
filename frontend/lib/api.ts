@@ -37,6 +37,17 @@ export async function fetchLoadsCompleted() {
   return res.json();
 }
 
+// get average load time today
+export async function fetchAvgLoadTime() {
+  const res = await fetch(`${baseURL}/stats/avgLoadTime`, {
+    method: "GET",
+  });
+  if(!res.ok){
+    throw new Error("Failed to fetch avg load time");
+  }
+  return res.json();
+}
+
 //get all sensors
 export async function fetchSensors() {
   const res = await fetch(`${baseURL}/sensors/all`, {
